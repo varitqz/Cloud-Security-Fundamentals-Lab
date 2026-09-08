@@ -1,57 +1,95 @@
-/* =========================================================
-   CSFL // GLOBAL CONTROL POSITIONING
-   ========================================================= */
+(() => {
+  /* =========================================================
+     CSFL // GLOBAL CONTROL POSITIONING
+     ========================================================= */
 
-function positionResetControl() {
-  const topbarSystem =
-    document.querySelector(
-      ".topbar-system"
-    );
+  function positionResetControl() {
+    const topbarSystem =
+      document.querySelector(
+        ".topbar-system"
+      );
 
-  const resetButton =
-    document.getElementById(
-      "resetProgressBtn"
-    );
+    const resetButton =
+      document.getElementById(
+        "resetProgressBtn"
+      );
 
-  if (
-    !topbarSystem ||
-    !resetButton
-  ) {
-    return;
+    if (
+      !topbarSystem ||
+      !resetButton
+    ) {
+      return false;
+    }
+
+    resetButton.textContent =
+      "RESET PROGRESS";
+
+    if (
+      resetButton.parentElement !==
+      topbarSystem
+    ) {
+      topbarSystem.appendChild(
+        resetButton
+      );
+    }
+
+    return true;
   }
 
-  resetButton.textContent =
-    "RESET PROGRESS";
 
-  topbarSystem.appendChild(
-    resetButton
-  );
-}
+  /* =========================================================
+     WATCH FOR APP.JS CONTROL CREATION
+     ========================================================= */
+
+  function watchForResetControl() {
+    if (
+      positionResetControl()
+    ) {
+      return;
+    }
+
+    const observer =
+      new MutationObserver(
+        () => {
+          if (
+            positionResetControl()
+          ) {
+            observer.disconnect();
+          }
+        }
+      );
+
+    observer.observe(
+      document.body,
+      {
+        childList: true,
+        subtree: true
+      }
+    );
+
+    /*
+      Safety stop:
+      We do not need to observe the page forever.
+    */
+
+    window.setTimeout(
+      () => {
+        observer.disconnect();
+
+        positionResetControl();
+      },
+      3000
+    );
+  }
 
 
-/* =========================================================
-   INITIALIZE
-   ========================================================= */
+  /* =========================================================
+     INITIALIZE
+     ========================================================= */
 
-function initializeGlobalControls() {
-  positionResetControl();
+  function initializeGlobalControls() {
+    watchForResetControl();
+  }
 
-  /*
-    app.js creates the reset control dynamically.
-
-    This short retry makes sure we also catch it
-    if script execution order changes later.
-  */
-
-  window.setTimeout(
-    positionResetControl,
-    100
-  );
-
-  window.setTimeout(
-    positionResetControl,
-    500
-  );
-}
-
-initializeGlobalControls();
+  initializeGlobalControls();
+})();
