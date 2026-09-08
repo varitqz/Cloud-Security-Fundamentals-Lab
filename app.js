@@ -11,9 +11,10 @@ const workspaceContent =
 
 let signInEvents = [];
 let roleAssignments = [];
+let cloudBasicsQuestions = [];
 
 /* =========================================================
-   PROGRESS
+   PROGRESS SYSTEM
    ========================================================= */
 
 const labProgressConfig = {
@@ -22,11 +23,13 @@ const labProgressConfig = {
     completedKey: "csfl-lab01-completed",
     statusElementId: "lab01Status"
   },
+
   lab02: {
     startedKey: "csfl-lab02-started",
     completedKey: "csfl-lab02-completed",
     statusElementId: "lab02Status"
   },
+
   lab03: {
     startedKey: "csfl-lab03-started",
     completedKey: "csfl-lab03-completed",
@@ -37,19 +40,25 @@ const labProgressConfig = {
 const progressStorageKeys = [
   "csfl-lab01-started",
   "csfl-lab01-completed",
+
   "csfl-lab02-started",
   "csfl-lab02-completed",
+
   "csfl-lab03-started",
   "csfl-lab03-completed",
+
   "csfl-cloud-answers",
   "csfl-identity-decision",
   "csfl-zero-trust-decision"
 ];
 
 function markLabStarted(labId) {
-  const config = labProgressConfig[labId];
+  const config =
+    labProgressConfig[labId];
 
-  if (!config) return;
+  if (!config) {
+    return;
+  }
 
   localStorage.setItem(
     config.startedKey,
@@ -60,9 +69,12 @@ function markLabStarted(labId) {
 }
 
 function markLabCompleted(labId) {
-  const config = labProgressConfig[labId];
+  const config =
+    labProgressConfig[labId];
 
-  if (!config) return;
+  if (!config) {
+    return;
+  }
 
   const alreadyCompleted =
     localStorage.getItem(
@@ -90,7 +102,8 @@ function markLabCompleted(labId) {
 }
 
 function getLabProgressState(labId) {
-  const config = labProgressConfig[labId];
+  const config =
+    labProgressConfig[labId];
 
   if (!config) {
     return "NOT STARTED";
@@ -179,7 +192,8 @@ function updateProgressUI() {
       progressElement.style.color =
         "var(--amber)";
     } else {
-      progressElement.style.color = "";
+      progressElement.style.color =
+        "";
     }
   }
 
@@ -193,7 +207,8 @@ function applyProgressStatusStyle(
   element,
   state
 ) {
-  element.textContent = state;
+  element.textContent =
+    state;
 
   element.style.transition =
     "all 160ms ease";
@@ -243,31 +258,47 @@ function updateEnvironmentStatus(
       ".status-card"
     );
 
-  if (!statusCard) return;
+  if (!statusCard) {
+    return;
+  }
 
   const statusTitle =
-    statusCard.querySelector("strong");
+    statusCard.querySelector(
+      "strong"
+    );
 
   const statusText =
-    statusCard.querySelector("p");
+    statusCard.querySelector(
+      "p"
+    );
 
-  if (completedLabs === totalLabs) {
-    statusTitle.textContent =
-      "Training Complete";
+  if (
+    completedLabs === totalLabs
+  ) {
+    if (statusTitle) {
+      statusTitle.textContent =
+        "Training Complete";
+    }
 
-    statusText.textContent =
-      "All local labs completed";
+    if (statusText) {
+      statusText.textContent =
+        "All local labs completed";
+    }
   } else {
-    statusTitle.textContent =
-      "Local Lab Environment";
+    if (statusTitle) {
+      statusTitle.textContent =
+        "Local Lab Environment";
+    }
 
-    statusText.textContent =
-      "Progress stored locally";
+    if (statusText) {
+      statusText.textContent =
+        "Progress stored locally";
+    }
   }
 }
 
 /* =========================================================
-   RESET BUTTON
+   RESET PROGRESS
    ========================================================= */
 
 function initializeProgressControls() {
@@ -276,7 +307,9 @@ function initializeProgressControls() {
       ".status-card"
     );
 
-  if (!statusCard) return;
+  if (!statusCard) {
+    return;
+  }
 
   if (
     document.getElementById(
@@ -287,7 +320,9 @@ function initializeProgressControls() {
   }
 
   const resetButton =
-    document.createElement("button");
+    document.createElement(
+      "button"
+    );
 
   resetButton.id =
     "resetProgressBtn";
@@ -341,11 +376,15 @@ function resetAllProgress() {
       "Reset all Cloud Security Lab progress?\n\nSaved answers and analyst decisions will be removed."
     );
 
-  if (!confirmed) return;
+  if (!confirmed) {
+    return;
+  }
 
   progressStorageKeys.forEach(
     (key) => {
-      localStorage.removeItem(key);
+      localStorage.removeItem(
+        key
+      );
     }
   );
 
@@ -371,7 +410,7 @@ function resetAllProgress() {
 }
 
 /* =========================================================
-   TOAST
+   SYSTEM TOAST
    ========================================================= */
 
 function showSystemToast(
@@ -388,7 +427,9 @@ function showSystemToast(
   }
 
   const toast =
-    document.createElement("div");
+    document.createElement(
+      "div"
+    );
 
   toast.id =
     "csflSystemToast";
@@ -449,184 +490,244 @@ function showSystemToast(
 }
 
 /* =========================================================
-   LAB 01 QUESTIONS
+   QUESTION BANK LOADER
    ========================================================= */
 
-const cloudBasicsQuestions = [
-  {
-    id: "cloud-q1",
-    category: "SERVICE MODEL",
-    question:
-      "A company runs a Windows Server virtual machine in Azure and manages the operating system, patches and installed software. Which cloud service model is this?",
-    options: [
-      "IaaS",
-      "PaaS",
-      "SaaS"
-    ],
-    answer: "IaaS",
-    explanation:
-      "Azure Virtual Machines are IaaS. The customer still manages the operating system and workload."
-  },
-  {
-    id: "cloud-q2",
-    category: "SERVICE MODEL",
-    question:
-      "A team deploys an application to Azure App Service without managing the underlying operating system. Which model fits best?",
-    options: [
-      "IaaS",
-      "PaaS",
-      "SaaS"
-    ],
-    answer: "PaaS",
-    explanation:
-      "Azure App Service is PaaS. Microsoft manages the underlying platform."
-  },
-  {
-    id: "cloud-q3",
-    category: "SERVICE MODEL",
-    question:
-      "Employees use Microsoft 365 while Microsoft operates the application and infrastructure. Which model is this?",
-    options: [
-      "IaaS",
-      "PaaS",
-      "SaaS"
-    ],
-    answer: "SaaS",
-    explanation:
-      "Microsoft 365 is SaaS because the complete application is provided as a service."
-  },
-  {
-    id: "cloud-q4",
-    category:
-      "SHARED RESPONSIBILITY",
-    question:
-      "Who secures Azure's physical datacenters and physical servers?",
-    options: [
-      "Customer",
-      "Cloud Provider",
-      "Shared Equally"
-    ],
-    answer:
-      "Cloud Provider",
-    explanation:
-      "The cloud provider secures the physical datacenter and core infrastructure."
-  },
-  {
-    id: "cloud-q5",
-    category:
-      "SHARED RESPONSIBILITY",
-    question:
-      "Who remains responsible for users, permissions and MFA configuration in SaaS?",
-    options: [
-      "Customer",
-      "Cloud Provider",
-      "Nobody"
-    ],
-    answer:
-      "Customer",
-    explanation:
-      "Identity, access and data responsibilities remain with the customer."
-  },
-  {
-    id: "cloud-q6",
-    category:
-      "AZURE HIERARCHY",
-    question:
-      "Which sequence correctly represents Azure management hierarchy?",
-    options: [
-      "Management Group → Subscription → Resource Group → Resource",
-      "Subscription → Management Group → Resource → Resource Group",
-      "Resource Group → Subscription → Management Group → Resource"
-    ],
-    answer:
-      "Management Group → Subscription → Resource Group → Resource",
-    explanation:
-      "Management Groups contain subscriptions, subscriptions contain resource groups, and resource groups contain resources."
+async function loadQuestionBank(
+  certification
+) {
+  let path = "";
+
+  if (
+    certification === "AZ-900"
+  ) {
+    path =
+      "data/questions/az900.json";
   }
-];
+
+  if (
+    certification === "SC-900"
+  ) {
+    path =
+      "data/questions/sc900.json";
+  }
+
+  if (!path) {
+    throw new Error(
+      "Unknown certification."
+    );
+  }
+
+  const response =
+    await fetch(path);
+
+  if (!response.ok) {
+    throw new Error(
+      `${certification} question bank could not be loaded.`
+    );
+  }
+
+  const questions =
+    await response.json();
+
+  if (
+    !Array.isArray(questions)
+  ) {
+    throw new Error(
+      `${certification} question bank has an invalid format.`
+    );
+  }
+
+  return questions;
+}
 
 /* =========================================================
-   LAB BUTTONS
+   LAB SELECTION
    ========================================================= */
 
-labButtons.forEach((button) => {
-  button.addEventListener(
-    "click",
-    () => {
-      const selectedLab =
-        button.dataset.lab;
+labButtons.forEach(
+  (button) => {
+    button.addEventListener(
+      "click",
+      () => {
+        const selectedLab =
+          button.dataset.lab;
 
-      if (
-        selectedLab ===
-        "cloud-basics"
-      ) {
-        markLabStarted("lab01");
-        renderCloudBasicsLab();
+        if (
+          selectedLab ===
+          "cloud-basics"
+        ) {
+          markLabStarted(
+            "lab01"
+          );
+
+          renderCloudBasicsLab();
+        }
+
+        if (
+          selectedLab ===
+          "identity-access"
+        ) {
+          markLabStarted(
+            "lab02"
+          );
+
+          renderIdentityLab();
+        }
+
+        if (
+          selectedLab ===
+          "zero-trust"
+        ) {
+          markLabStarted(
+            "lab03"
+          );
+
+          renderZeroTrustLab();
+        }
+
+        workspaceContent.scrollIntoView({
+          behavior: "smooth",
+          block: "start"
+        });
       }
-
-      if (
-        selectedLab ===
-        "identity-access"
-      ) {
-        markLabStarted("lab02");
-        renderIdentityLab();
-      }
-
-      if (
-        selectedLab ===
-        "zero-trust"
-      ) {
-        markLabStarted("lab03");
-        renderZeroTrustLab();
-      }
-
-      workspaceContent.scrollIntoView({
-        behavior: "smooth",
-        block: "start"
-      });
-    }
-  );
-});
+    );
+  }
+);
 
 /* =========================================================
-   LAB 01
+   LAB 01 - AZ-900 QUESTION ENGINE
    ========================================================= */
 
-function renderCloudBasicsLab() {
+async function renderCloudBasicsLab() {
   workspaceTitle.textContent =
-    "LAB 01 // Cloud Basics Challenge";
+    "LAB 01 // AZ-900 Practice";
 
   workspaceStatus.textContent =
-    "FOUNDATION CHALLENGE";
+    "QUESTION BANK LOADING";
+
+  workspaceContent.innerHTML = `
+    <div class="loading-state">
+      <span class="terminal-prompt">
+        root@csfl:~$
+      </span>
+
+      loading data/questions/az900.json...
+    </div>
+  `;
+
+  try {
+    cloudBasicsQuestions =
+      await loadQuestionBank(
+        "AZ-900"
+      );
+
+    if (
+      cloudBasicsQuestions.length === 0
+    ) {
+      throw new Error(
+        "AZ-900 question bank is empty."
+      );
+    }
+
+    renderCloudQuestionWorkspace();
+  } catch (error) {
+    workspaceStatus.textContent =
+      "QUESTION BANK ERROR";
+
+    workspaceContent.innerHTML = `
+      <div class="error-box">
+
+        <strong>
+          AZ-900 QUESTION BANK LOAD FAILED
+        </strong>
+
+        <p>
+          ${escapeHtml(
+            error.message
+          )}
+        </p>
+
+        <p>
+          Check:
+          data/questions/az900.json
+        </p>
+
+        <p>
+          Make sure the website is running
+          through Live Server.
+        </p>
+
+      </div>
+    `;
+  }
+}
+
+function renderCloudQuestionWorkspace() {
+  workspaceStatus.textContent =
+    "AZ-900 PRACTICE ACTIVE";
+
+  const domains =
+    [
+      ...new Set(
+        cloudBasicsQuestions.map(
+          (question) =>
+            question.domain
+        )
+      )
+    ];
 
   workspaceContent.innerHTML = `
     <div class="investigation-layout">
 
       <section class="case-panel">
+
         <div class="case-header">
+
           <div>
             <span class="case-id">
-              MODULE // AZF-001
+              QUESTION BANK // AZ-900
             </span>
 
             <h3>
-              Cloud Security Fundamentals Challenge
+              Azure Fundamentals Practice
             </h3>
           </div>
 
           <span class="severity-badge">
             TRAINING
           </span>
+
         </div>
 
         <p>
-          Analyze six cloud scenarios.
+          Questions are loaded dynamically from:
+          <strong>
+            data/questions/az900.json
+          </strong>
         </p>
+
+        <div class="case-indicators">
+
+          ${domains
+            .map(
+              (domain) => `
+                <span>
+                  ${escapeHtml(domain)}
+                </span>
+              `
+            )
+            .join("")}
+
+        </div>
+
       </section>
 
       <section class="investigation-stats">
+
         <div>
-          <span>QUESTIONS</span>
+          <span>QUESTION BANK</span>
+
           <strong>
             ${cloudBasicsQuestions.length}
           </strong>
@@ -634,6 +735,7 @@ function renderCloudBasicsLab() {
 
         <div>
           <span>ANSWERED</span>
+
           <strong id="cloudAnsweredCount">
             0
           </strong>
@@ -641,6 +743,7 @@ function renderCloudBasicsLab() {
 
         <div>
           <span>CORRECT</span>
+
           <strong id="cloudCorrectCount">
             0
           </strong>
@@ -648,38 +751,67 @@ function renderCloudBasicsLab() {
 
         <div>
           <span>SCORE</span>
+
           <strong id="cloudScore">
             0%
           </strong>
         </div>
+
+      </section>
+
+      <section class="mission-box">
+
+        <span class="mission-label">
+          MISSION
+        </span>
+
+        <h3>
+          Complete the current AZ-900 question bank.
+        </h3>
+
+        <p>
+          The question engine automatically adapts
+          when more questions are added to az900.json.
+        </p>
+
       </section>
 
       <div id="cloudQuestionContainer">
       </div>
 
       <section class="decision-panel">
+
         <span class="panel-label">
-          CHALLENGE CONTROL
+          QUESTION ENGINE
         </span>
 
+        <p>
+          Answer the questions and submit the
+          complete training block.
+        </p>
+
         <div class="decision-actions">
+
           <button id="checkCloudAnswersBtn">
             Check Answers
           </button>
 
           <button id="resetCloudAnswersBtn">
-            Reset Challenge
+            Reset Answers
           </button>
+
         </div>
 
         <div id="cloudChallengeStatus">
         </div>
+
       </section>
 
     </div>
   `;
 
   renderCloudQuestions();
+
   loadSavedCloudAnswers();
 
   document
@@ -709,76 +841,113 @@ function renderCloudQuestions() {
 
   container.innerHTML =
     cloudBasicsQuestions
-      .map((question, index) => {
-        const options =
-          question.options
-            .map(
-              (option) => `
-                <option
-                  value="${escapeHtml(option)}"
+      .map(
+        (question, index) => {
+          const options =
+            question.options
+              .map(
+                (option) => `
+                  <option
+                    value="${escapeHtml(option)}"
+                  >
+                    ${escapeHtml(option)}
+                  </option>
+                `
+              )
+              .join("");
+
+          return `
+            <section class="event-console">
+
+              <div class="console-header">
+
+                <div>
+
+                  <span class="terminal-prompt">
+                    ${String(
+                      index + 1
+                    ).padStart(
+                      2,
+                      "0"
+                    )} //
+                  </span>
+
+                  ${escapeHtml(
+                    question.topic
+                  )}
+
+                  <span>
+                    [
+                    ${escapeHtml(
+                      question.difficulty.toUpperCase()
+                    )}
+                    ]
+                  </span>
+
+                </div>
+
+                <select
+                  id="${escapeHtml(question.id)}"
+                  class="cloud-answer"
                 >
-                  ${escapeHtml(option)}
-                </option>
-              `
-            )
-            .join("");
 
-        return `
-          <section class="event-console">
+                  <option value="">
+                    Select answer...
+                  </option>
 
-            <div class="console-header">
-              <div>
-                <span class="terminal-prompt">
-                  ${String(
-                    index + 1
-                  ).padStart(2, "0")} //
-                </span>
+                  ${options}
 
-                ${escapeHtml(
-                  question.category
-                )}
+                </select>
+
               </div>
 
-              <select
-                id="${question.id}"
-                class="cloud-answer"
+              <div class="workspace-content">
+
+                <p>
+                  ${escapeHtml(
+                    question.question
+                  )}
+                </p>
+
+                <p class="eyebrow">
+                  ${escapeHtml(
+                    question.domain
+                  )}
+                </p>
+
+              </div>
+
+              <div
+                id="${escapeHtml(
+                  question.id
+                )}-feedback"
+                class="task-item hidden"
               >
-                <option value="">
-                  Select answer...
-                </option>
+              </div>
 
-                ${options}
-              </select>
-            </div>
-
-            <div class="workspace-content">
-              <p>
-                ${escapeHtml(
-                  question.question
-                )}
-              </p>
-            </div>
-
-            <div
-              id="${question.id}-feedback"
-              class="task-item hidden"
-            ></div>
-
-          </section>
-        `;
-      })
+            </section>
+          `;
+        }
+      )
       .join("");
 
   document
     .querySelectorAll(
       ".cloud-answer"
     )
-    .forEach((select) => {
-      select.addEventListener(
-        "change",
-        updateCloudAnsweredCount
-      );
-    });
+    .forEach(
+      (select) => {
+        select.addEventListener(
+          "change",
+          handleCloudAnswerChange
+        );
+      }
+    );
+}
+
+function handleCloudAnswerChange() {
+  updateCloudAnsweredCount();
+  saveCloudAnswers();
 }
 
 function updateCloudAnsweredCount() {
@@ -805,11 +974,35 @@ function updateCloudAnsweredCount() {
   }
 }
 
+function saveCloudAnswers() {
+  const answers = {};
+
+  cloudBasicsQuestions.forEach(
+    (question) => {
+      const select =
+        document.getElementById(
+          question.id
+        );
+
+      if (select) {
+        answers[
+          question.id
+        ] = select.value;
+      }
+    }
+  );
+
+  localStorage.setItem(
+    "csfl-cloud-answers",
+    JSON.stringify(
+      answers
+    )
+  );
+}
+
 function checkCloudBasicsAnswers() {
   let correct = 0;
   let answered = 0;
-
-  const savedAnswers = {};
 
   cloudBasicsQuestions.forEach(
     (question) => {
@@ -826,11 +1019,9 @@ function checkCloudBasicsAnswers() {
       const selected =
         select.value;
 
-      savedAnswers[
-        question.id
-      ] = selected;
-
-      if (selected !== "") {
+      if (
+        selected !== ""
+      ) {
         answered++;
       }
 
@@ -858,6 +1049,11 @@ function checkCloudBasicsAnswers() {
           <span class="event-failed">
             UNANSWERED
           </span>
+
+          <p>
+            Select an answer before
+            submitting the block.
+          </p>
         `;
       } else {
         feedback.innerHTML = `
@@ -867,9 +1063,11 @@ function checkCloudBasicsAnswers() {
 
           <p>
             Correct answer:
-            ${escapeHtml(
-              question.answer
-            )}
+            <strong>
+              ${escapeHtml(
+                question.answer
+              )}
+            </strong>
           </p>
 
           <p>
@@ -885,6 +1083,8 @@ function checkCloudBasicsAnswers() {
       );
     }
   );
+
+  saveCloudAnswers();
 
   const score =
     Math.round(
@@ -909,13 +1109,6 @@ function checkCloudBasicsAnswers() {
   ).textContent =
     `${score}%`;
 
-  localStorage.setItem(
-    "csfl-cloud-answers",
-    JSON.stringify(
-      savedAnswers
-    )
-  );
-
   const status =
     document.getElementById(
       "cloudChallengeStatus"
@@ -926,7 +1119,7 @@ function checkCloudBasicsAnswers() {
     cloudBasicsQuestions.length
   ) {
     status.textContent =
-      "COMPLETE // Cloud Basics passed.";
+      `COMPLETE // ${correct}/${cloudBasicsQuestions.length} correct. AZ-900 block passed.`;
 
     status.className =
       "decision-success";
@@ -934,9 +1127,18 @@ function checkCloudBasicsAnswers() {
     markLabCompleted(
       "lab01"
     );
+  } else if (
+    answered <
+    cloudBasicsQuestions.length
+  ) {
+    status.textContent =
+      `INCOMPLETE // ${answered}/${cloudBasicsQuestions.length} answered.`;
+
+    status.className =
+      "decision-error";
   } else {
     status.textContent =
-      `RESULT // ${correct}/${cloudBasicsQuestions.length} correct.`;
+      `RESULT // ${correct}/${cloudBasicsQuestions.length} correct (${score}%). Review the explanations and retry.`;
 
     status.className =
       "decision-error";
@@ -948,7 +1150,12 @@ function resetCloudBasicsChallenge() {
     "csfl-cloud-answers"
   );
 
-  renderCloudBasicsLab();
+  renderCloudQuestionWorkspace();
+
+  showSystemToast(
+    "AZ-900 // ANSWERS RESET",
+    "warning"
+  );
 }
 
 function loadSavedCloudAnswers() {
@@ -957,7 +1164,9 @@ function loadSavedCloudAnswers() {
       "csfl-cloud-answers"
     );
 
-  if (!saved) return;
+  if (!saved) {
+    return;
+  }
 
   try {
     const answers =
@@ -988,7 +1197,7 @@ function loadSavedCloudAnswers() {
 }
 
 /* =========================================================
-   LAB 02
+   LAB 02 - IDENTITY & ACCESS
    ========================================================= */
 
 async function renderIdentityLab() {
@@ -1000,11 +1209,13 @@ async function renderIdentityLab() {
 
   workspaceContent.innerHTML = `
     <div class="loading-state">
+
       <span class="terminal-prompt">
         root@csfl:~$
       </span>
 
       loading role-assignments.csv...
+
     </div>
   `;
 
@@ -1031,9 +1242,17 @@ async function renderIdentityLab() {
   } catch (error) {
     workspaceContent.innerHTML = `
       <div class="error-box">
-        ${escapeHtml(
-          error.message
-        )}
+
+        <strong>
+          IDENTITY DATASET LOAD FAILED
+        </strong>
+
+        <p>
+          ${escapeHtml(
+            error.message
+          )}
+        </p>
+
       </div>
     `;
   }
@@ -1046,7 +1265,9 @@ function renderIdentityWorkspace(
     <div class="investigation-layout">
 
       <section class="case-panel">
+
         <div class="case-header">
+
           <div>
             <span class="case-id">
               CASE // IAM-002
@@ -1060,12 +1281,13 @@ function renderIdentityWorkspace(
           <span class="severity-badge">
             ACCESS REVIEW
           </span>
+
         </div>
 
         <p>
-          Identify excessive privileges,
-          missing MFA and violations
-          of least privilege.
+          Review synthetic Azure and Microsoft Entra
+          role assignments and identify excessive
+          privileges and least-privilege violations.
         </p>
 
         <div class="case-indicators">
@@ -1074,36 +1296,31 @@ function renderIdentityWorkspace(
           <span>MFA</span>
           <span>Unexpected Access</span>
         </div>
+
       </section>
 
       <section class="investigation-stats">
+
         <div>
           <span>TOTAL ASSIGNMENTS</span>
-          <strong id="totalAssignments">
-            0
-          </strong>
+          <strong id="totalAssignments">0</strong>
         </div>
 
         <div>
           <span>PRIVILEGED</span>
-          <strong id="privilegedAssignments">
-            0
-          </strong>
+          <strong id="privilegedAssignments">0</strong>
         </div>
 
         <div>
           <span>UNEXPECTED</span>
-          <strong id="unexpectedAssignments">
-            0
-          </strong>
+          <strong id="unexpectedAssignments">0</strong>
         </div>
 
         <div>
           <span>HIGH / CRITICAL</span>
-          <strong id="dangerousAssignments">
-            0
-          </strong>
+          <strong id="dangerousAssignments">0</strong>
         </div>
+
       </section>
 
       <section class="event-console">
@@ -1119,6 +1336,7 @@ function renderIdentityWorkspace(
           </div>
 
           <select id="identityFilter">
+
             <option value="all">
               All Assignments
             </option>
@@ -1138,11 +1356,13 @@ function renderIdentityWorkspace(
             <option value="dangerous">
               High / Critical Risk
             </option>
+
           </select>
 
         </div>
 
         <div class="table-wrapper">
+
           <table class="event-table">
 
             <thead>
@@ -1163,6 +1383,7 @@ function renderIdentityWorkspace(
             ></tbody>
 
           </table>
+
         </div>
 
       </section>
@@ -1170,6 +1391,7 @@ function renderIdentityWorkspace(
       <section class="investigation-bottom">
 
         <div class="tasks-panel">
+
           <span class="panel-label">
             ACCESS REVIEW TASKS
           </span>
@@ -1193,6 +1415,7 @@ function renderIdentityWorkspace(
             <input type="checkbox" />
             Determine the highest-risk assignment.
           </label>
+
         </div>
 
         <div class="decision-panel">
@@ -1238,6 +1461,7 @@ Additional checks:"
         id="identityExpectedFinding"
         class="expected-finding hidden"
       >
+
         <span class="panel-label">
           EXPECTED FINDING
         </span>
@@ -1251,6 +1475,7 @@ Additional checks:"
           Global Administrator,
           tenant scope and MFA disabled.
         </p>
+
       </section>
 
     </div>
@@ -1264,31 +1489,27 @@ Additional checks:"
     assignments
   );
 
-  const identityTextarea =
+  const textarea =
     document.getElementById(
       "identityDecision"
     );
 
-  /*
-    Explicitly ensure the textarea
-    remains interactive.
-  */
-  identityTextarea.disabled =
+  textarea.disabled =
     false;
 
-  identityTextarea.readOnly =
+  textarea.readOnly =
     false;
 
-  identityTextarea.style.pointerEvents =
+  textarea.style.pointerEvents =
     "auto";
 
-  identityTextarea.style.position =
+  textarea.style.position =
     "relative";
 
-  identityTextarea.style.zIndex =
+  textarea.style.zIndex =
     "20";
 
-  identityTextarea.style.userSelect =
+  textarea.style.userSelect =
     "text";
 
   document
@@ -1377,7 +1598,9 @@ function handleIdentityFilter(
   const filter =
     event.target.value;
 
-  if (filter === "privileged") {
+  if (
+    filter === "privileged"
+  ) {
     filtered =
       roleAssignments.filter(
         (item) =>
@@ -1386,7 +1609,9 @@ function handleIdentityFilter(
       );
   }
 
-  if (filter === "unexpected") {
+  if (
+    filter === "unexpected"
+  ) {
     filtered =
       roleAssignments.filter(
         (item) =>
@@ -1395,7 +1620,9 @@ function handleIdentityFilter(
       );
   }
 
-  if (filter === "no-mfa") {
+  if (
+    filter === "no-mfa"
+  ) {
     filtered =
       roleAssignments.filter(
         (item) =>
@@ -1404,7 +1631,9 @@ function handleIdentityFilter(
       );
   }
 
-  if (filter === "dangerous") {
+  if (
+    filter === "dangerous"
+  ) {
     filtered =
       roleAssignments.filter(
         (item) =>
@@ -1430,101 +1659,103 @@ function renderIdentityTable(
 
   tableBody.innerHTML =
     assignments
-      .map((assignment) => {
-        const mfa =
-          assignment.MFAEnabled ===
-          "true";
+      .map(
+        (assignment) => {
+          const mfa =
+            assignment.MFAEnabled ===
+            "true";
 
-        const privileged =
-          assignment.Privileged ===
-          "true";
+          const privileged =
+            assignment.Privileged ===
+            "true";
 
-        const expected =
-          assignment.ExpectedAccess ===
-          "true";
+          const expected =
+            assignment.ExpectedAccess ===
+            "true";
 
-        return `
-          <tr>
+          return `
+            <tr>
 
-            <td class="user-cell">
-              ${escapeHtml(
-                assignment.User
-              )}
-            </td>
-
-            <td>
-              ${escapeHtml(
-                assignment.JobRole
-              )}
-            </td>
-
-            <td>
-              ${escapeHtml(
-                assignment.AzureRole
-              )}
-            </td>
-
-            <td>
-              ${escapeHtml(
-                assignment.Scope
-              )}
-            </td>
-
-            <td>
-              <span class="${
-                mfa
-                  ? "event-success"
-                  : "event-failed"
-              }">
-                ${
-                  mfa
-                    ? "ENABLED"
-                    : "DISABLED"
-                }
-              </span>
-            </td>
-
-            <td>
-              <span class="${
-                privileged
-                  ? "event-failed"
-                  : "event-success"
-              }">
-                ${
-                  privileged
-                    ? "YES"
-                    : "NO"
-                }
-              </span>
-            </td>
-
-            <td>
-              <span class="${
-                expected
-                  ? "event-success"
-                  : "event-failed"
-              }">
-                ${
-                  expected
-                    ? "EXPECTED"
-                    : "UNEXPECTED"
-                }
-              </span>
-            </td>
-
-            <td>
-              <span class="risk-badge ${getRiskClass(
-                assignment.RiskLevel
-              )}">
+              <td class="user-cell">
                 ${escapeHtml(
-                  assignment.RiskLevel.toUpperCase()
+                  assignment.User
                 )}
-              </span>
-            </td>
+              </td>
 
-          </tr>
-        `;
-      })
+              <td>
+                ${escapeHtml(
+                  assignment.JobRole
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  assignment.AzureRole
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  assignment.Scope
+                )}
+              </td>
+
+              <td>
+                <span class="${
+                  mfa
+                    ? "event-success"
+                    : "event-failed"
+                }">
+                  ${
+                    mfa
+                      ? "ENABLED"
+                      : "DISABLED"
+                  }
+                </span>
+              </td>
+
+              <td>
+                <span class="${
+                  privileged
+                    ? "event-failed"
+                    : "event-success"
+                }">
+                  ${
+                    privileged
+                      ? "YES"
+                      : "NO"
+                  }
+                </span>
+              </td>
+
+              <td>
+                <span class="${
+                  expected
+                    ? "event-success"
+                    : "event-failed"
+                }">
+                  ${
+                    expected
+                      ? "EXPECTED"
+                      : "UNEXPECTED"
+                  }
+                </span>
+              </td>
+
+              <td>
+                <span class="risk-badge ${getRiskClass(
+                  assignment.RiskLevel
+                )}">
+                  ${escapeHtml(
+                    assignment.RiskLevel.toUpperCase()
+                  )}
+                </span>
+              </td>
+
+            </tr>
+          `;
+        }
+      )
       .join("");
 }
 
@@ -1536,7 +1767,9 @@ function getRiskClass(level) {
     return "risk-high";
   }
 
-  if (level === "medium") {
+  if (
+    level === "medium"
+  ) {
     return "risk-medium";
   }
 
@@ -1611,11 +1844,13 @@ function revealIdentityFinding() {
       "identityExpectedFinding"
     )
     .classList
-    .toggle("hidden");
+    .toggle(
+      "hidden"
+    );
 }
 
 /* =========================================================
-   LAB 03
+   LAB 03 - ZERO TRUST
    ========================================================= */
 
 async function renderZeroTrustLab() {
@@ -1627,11 +1862,13 @@ async function renderZeroTrustLab() {
 
   workspaceContent.innerHTML = `
     <div class="loading-state">
+
       <span class="terminal-prompt">
         root@csfl:~$
       </span>
 
       loading signin-events.csv...
+
     </div>
   `;
 
@@ -1658,9 +1895,17 @@ async function renderZeroTrustLab() {
   } catch (error) {
     workspaceContent.innerHTML = `
       <div class="error-box">
-        ${escapeHtml(
-          error.message
-        )}
+
+        <strong>
+          DATASET LOAD FAILED
+        </strong>
+
+        <p>
+          ${escapeHtml(
+            error.message
+          )}
+        </p>
+
       </div>
     `;
   }
@@ -1675,6 +1920,7 @@ function renderZeroTrustWorkspace(
       <section class="case-panel">
 
         <div class="case-header">
+
           <div>
             <span class="case-id">
               CASE // ZT-003
@@ -1688,42 +1934,45 @@ function renderZeroTrustWorkspace(
           <span class="severity-badge">
             HIGH PRIORITY
           </span>
+
         </div>
 
         <p>
           Identify activity that violates
           Zero Trust expectations.
         </p>
+
+        <div class="case-indicators">
+          <span>Unknown devices</span>
+          <span>No MFA</span>
+          <span>Foreign locations</span>
+          <span>Failed → Success</span>
+        </div>
+
       </section>
 
       <section class="investigation-stats">
+
         <div>
           <span>TOTAL EVENTS</span>
-          <strong id="totalEvents">
-            0
-          </strong>
+          <strong id="totalEvents">0</strong>
         </div>
 
         <div>
           <span>FAILED</span>
-          <strong id="failedEvents">
-            0
-          </strong>
+          <strong id="failedEvents">0</strong>
         </div>
 
         <div>
           <span>HIGH RISK</span>
-          <strong id="highRiskEvents">
-            0
-          </strong>
+          <strong id="highRiskEvents">0</strong>
         </div>
 
         <div>
           <span>NO MFA SUCCESS</span>
-          <strong id="noMfaEvents">
-            0
-          </strong>
+          <strong id="noMfaEvents">0</strong>
         </div>
+
       </section>
 
       <section class="event-console">
@@ -1739,6 +1988,7 @@ function renderZeroTrustWorkspace(
           </div>
 
           <select id="eventFilter">
+
             <option value="all">
               All Events
             </option>
@@ -1758,6 +2008,7 @@ function renderZeroTrustWorkspace(
             <option value="unknown-device">
               Unknown Device
             </option>
+
           </select>
 
         </div>
@@ -1810,7 +2061,13 @@ function renderZeroTrustWorkspace(
 
           <label>
             <input type="checkbox" />
-            Identify highest-risk event.
+            Identify the highest-risk event.
+          </label>
+
+          <label>
+            <input type="checkbox" />
+            Determine whether failed attempts
+            were followed by success.
           </label>
 
         </div>
@@ -1857,8 +2114,16 @@ function renderZeroTrustWorkspace(
         </span>
 
         <h3>
-          admin@example.com requires immediate attention.
+          admin@example.com requires
+          immediate attention.
         </h3>
+
+        <p>
+          Multiple failed attempts from a
+          Russian IP were followed by a
+          successful Azure Portal sign-in
+          from an unknown device without MFA.
+        </p>
 
       </section>
 
@@ -1884,6 +2149,9 @@ function renderZeroTrustWorkspace(
 
   textarea.style.zIndex =
     "20";
+
+  textarea.style.userSelect =
+    "text";
 
   updateZeroTrustStats(
     events
@@ -1917,24 +2185,10 @@ function renderZeroTrustWorkspace(
     )
     .addEventListener(
       "click",
-      () => {
-        document
-          .getElementById(
-            "expectedFinding"
-          )
-          .classList
-          .toggle("hidden");
-      }
+      revealZeroTrustFinding
     );
 
-  const saved =
-    localStorage.getItem(
-      "csfl-zero-trust-decision"
-    );
-
-  if (saved) {
-    textarea.value = saved;
-  }
+  loadSavedZeroTrustDecision();
 }
 
 function updateZeroTrustStats(
@@ -1950,7 +2204,8 @@ function updateZeroTrustStats(
   ).textContent =
     events.filter(
       (event) =>
-        event.ResultType !== "0"
+        event.ResultType !==
+        "0"
     ).length;
 
   document.getElementById(
@@ -1974,22 +2229,29 @@ function updateZeroTrustStats(
     ).length;
 }
 
-function handleEventFilter(event) {
+function handleEventFilter(
+  event
+) {
   let filtered =
     [...signInEvents];
 
   const filter =
     event.target.value;
 
-  if (filter === "failed") {
+  if (
+    filter === "failed"
+  ) {
     filtered =
       signInEvents.filter(
         (item) =>
-          item.ResultType !== "0"
+          item.ResultType !==
+          "0"
       );
   }
 
-  if (filter === "no-mfa") {
+  if (
+    filter === "no-mfa"
+  ) {
     filtered =
       signInEvents.filter(
         (item) =>
@@ -2000,7 +2262,9 @@ function handleEventFilter(event) {
       );
   }
 
-  if (filter === "high-risk") {
+  if (
+    filter === "high-risk"
+  ) {
     filtered =
       signInEvents.filter(
         (item) =>
@@ -2021,10 +2285,14 @@ function handleEventFilter(event) {
       );
   }
 
-  renderEventTable(filtered);
+  renderEventTable(
+    filtered
+  );
 }
 
-function renderEventTable(events) {
+function renderEventTable(
+  events
+) {
   const body =
     document.getElementById(
       "eventTableBody"
@@ -2032,84 +2300,87 @@ function renderEventTable(events) {
 
   body.innerHTML =
     events
-      .map((event) => {
-        const success =
-          event.ResultType === "0";
+      .map(
+        (event) => {
+          const success =
+            event.ResultType ===
+            "0";
 
-        return `
-          <tr>
+          return `
+            <tr>
 
-            <td>
-              ${escapeHtml(
-                formatTime(
-                  event.TimeGenerated
-                )
-              )}
-            </td>
-
-            <td class="user-cell">
-              ${escapeHtml(
-                event.UserPrincipalName
-              )}
-            </td>
-
-            <td>
-              <span class="${
-                success
-                  ? "event-success"
-                  : "event-failed"
-              }">
-                ${
-                  success
-                    ? "SUCCESS"
-                    : "FAILED"
-                }
-              </span>
-            </td>
-
-            <td>
-              ${escapeHtml(
-                event.IPAddress
-              )}
-            </td>
-
-            <td>
-              ${escapeHtml(
-                event.Location
-              )}
-            </td>
-
-            <td>
-              ${escapeHtml(
-                event.DeviceName
-              )}
-            </td>
-
-            <td>
-              ${escapeHtml(
-                event.AppDisplayName
-              )}
-            </td>
-
-            <td>
-              ${escapeHtml(
-                event.MFAStatus
-              )}
-            </td>
-
-            <td>
-              <span class="risk-badge ${getRiskClass(
-                event.RiskLevel
-              )}">
+              <td>
                 ${escapeHtml(
-                  event.RiskLevel.toUpperCase()
+                  formatTime(
+                    event.TimeGenerated
+                  )
                 )}
-              </span>
-            </td>
+              </td>
 
-          </tr>
-        `;
-      })
+              <td class="user-cell">
+                ${escapeHtml(
+                  event.UserPrincipalName
+                )}
+              </td>
+
+              <td>
+                <span class="${
+                  success
+                    ? "event-success"
+                    : "event-failed"
+                }">
+                  ${
+                    success
+                      ? "SUCCESS"
+                      : "FAILED"
+                  }
+                </span>
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  event.IPAddress
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  event.Location
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  event.DeviceName
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  event.AppDisplayName
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  event.MFAStatus
+                )}
+              </td>
+
+              <td>
+                <span class="risk-badge ${getRiskClass(
+                  event.RiskLevel
+                )}">
+                  ${escapeHtml(
+                    event.RiskLevel.toUpperCase()
+                  )}
+                </span>
+              </td>
+
+            </tr>
+          `;
+        }
+      )
       .join("");
 }
 
@@ -2155,6 +2426,37 @@ function saveZeroTrustDecision() {
   );
 }
 
+function loadSavedZeroTrustDecision() {
+  const saved =
+    localStorage.getItem(
+      "csfl-zero-trust-decision"
+    );
+
+  const textarea =
+    document.getElementById(
+      "analystDecision"
+    );
+
+  if (
+    saved &&
+    textarea
+  ) {
+    textarea.value =
+      saved;
+  }
+}
+
+function revealZeroTrustFinding() {
+  document
+    .getElementById(
+      "expectedFinding"
+    )
+    .classList
+    .toggle(
+      "hidden"
+    );
+}
+
 /* =========================================================
    CSV
    ========================================================= */
@@ -2165,7 +2467,9 @@ function parseCsv(csvText) {
       .trim()
       .split(/\r?\n/);
 
-  if (lines.length < 2) {
+  if (
+    lines.length < 2
+  ) {
     return [];
   }
 
@@ -2183,37 +2487,46 @@ function parseCsv(csvText) {
       (line) =>
         line.trim() !== ""
     )
-    .map((line) => {
-      const values =
-        line.split(",");
+    .map(
+      (line) => {
+        const values =
+          line.split(",");
 
-      const entry = {};
+        const entry = {};
 
-      headers.forEach(
-        (header, index) => {
-          entry[header] =
-            values[index]?.trim() ??
-            "";
-        }
-      );
+        headers.forEach(
+          (header, index) => {
+            entry[header] =
+              values[index]?.trim() ??
+              "";
+          }
+        );
 
-      return entry;
-    });
+        return entry;
+      }
+    );
 }
 
 /* =========================================================
    HELPERS
    ========================================================= */
 
-function formatTime(timestamp) {
+function formatTime(
+  timestamp
+) {
   if (!timestamp) {
     return "";
   }
 
-  if (timestamp.includes("T")) {
+  if (
+    timestamp.includes("T")
+  ) {
     return timestamp
       .split("T")[1]
-      .replace("Z", "");
+      .replace(
+        "Z",
+        ""
+      );
   }
 
   return timestamp;
@@ -2221,16 +2534,32 @@ function formatTime(timestamp) {
 
 function escapeHtml(value) {
   return String(value)
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#039;");
+    .replaceAll(
+      "&",
+      "&amp;"
+    )
+    .replaceAll(
+      "<",
+      "&lt;"
+    )
+    .replaceAll(
+      ">",
+      "&gt;"
+    )
+    .replaceAll(
+      '"',
+      "&quot;"
+    )
+    .replaceAll(
+      "'",
+      "&#039;"
+    );
 }
 
 /* =========================================================
-   INIT
+   INITIALIZE
    ========================================================= */
 
 initializeProgressControls();
+
 updateProgressUI();

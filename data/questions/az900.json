@@ -1,0 +1,92 @@
+[
+  {
+    "id": "az900-001",
+    "certification": "AZ-900",
+    "domain": "Cloud Concepts",
+    "topic": "Cloud Service Models",
+    "difficulty": "easy",
+    "question": "A company runs a Windows Server virtual machine in Azure and manages the operating system, patches, and installed software. Which cloud service model is this?",
+    "options": [
+      "IaaS",
+      "PaaS",
+      "SaaS"
+    ],
+    "answer": "IaaS",
+    "explanation": "Azure Virtual Machines are Infrastructure as a Service. Microsoft manages the physical infrastructure while the customer manages the guest operating system, applications, and workload configuration."
+  },
+  {
+    "id": "az900-002",
+    "certification": "AZ-900",
+    "domain": "Cloud Concepts",
+    "topic": "Cloud Service Models",
+    "difficulty": "easy",
+    "question": "A development team deploys an application to Azure App Service without managing the underlying operating system. Which cloud service model fits best?",
+    "options": [
+      "IaaS",
+      "PaaS",
+      "SaaS"
+    ],
+    "answer": "PaaS",
+    "explanation": "Azure App Service is Platform as a Service. Microsoft manages the underlying platform while the customer focuses on the application, data, and configuration."
+  },
+  {
+    "id": "az900-003",
+    "certification": "AZ-900",
+    "domain": "Cloud Concepts",
+    "topic": "Cloud Service Models",
+    "difficulty": "easy",
+    "question": "Employees use Microsoft 365 through a browser while Microsoft operates the application and underlying infrastructure. Which cloud service model is this?",
+    "options": [
+      "IaaS",
+      "PaaS",
+      "SaaS"
+    ],
+    "answer": "SaaS",
+    "explanation": "Microsoft 365 is Software as a Service because Microsoft operates and delivers the complete application."
+  },
+  {
+    "id": "az900-004",
+    "certification": "AZ-900",
+    "domain": "Cloud Concepts",
+    "topic": "Shared Responsibility",
+    "difficulty": "easy",
+    "question": "Who is responsible for securing the physical datacenters, physical servers, and core infrastructure used by Microsoft Azure?",
+    "options": [
+      "Customer",
+      "Cloud Provider",
+      "Shared Equally"
+    ],
+    "answer": "Cloud Provider",
+    "explanation": "Microsoft is responsible for the physical security of Azure datacenters, physical hosts, and the core cloud infrastructure."
+  },
+  {
+    "id": "az900-005",
+    "certification": "AZ-900",
+    "domain": "Cloud Concepts",
+    "topic": "Shared Responsibility",
+    "difficulty": "medium",
+    "question": "A company uses a SaaS application hosted in Azure. Who remains responsible for managing user identities, access permissions, and MFA configuration?",
+    "options": [
+      "Customer",
+      "Cloud Provider",
+      "Nobody"
+    ],
+    "answer": "Customer",
+    "explanation": "SaaS reduces infrastructure responsibilities, but the customer still remains responsible for identities, access management, data, and many security configurations."
+  },
+  {
+    "id": "az900-006",
+    "certification": "AZ-900",
+    "domain": "Azure Architecture and Services",
+    "topic": "Azure Resource Hierarchy",
+    "difficulty": "easy",
+    "question": "Which sequence correctly represents the Azure management hierarchy from highest to lowest?",
+    "options": [
+      "Management Group → Subscription → Resource Group → Resource",
+      "Subscription → Management Group → Resource → Resource Group",
+      "Resource Group → Subscription → Management Group → Resource"
+    ],
+    "answer": "Management Group → Subscription → Resource Group → Resource",
+    "explanation": "Management Groups can contain subscriptions. Subscriptions contain resource groups, and resource groups contain Azure resources."
+  }
+]
