@@ -1,0 +1,28 @@
+// Detection: Risky Admin Sign-in
+// Table: SigninLogs
+// Purpose:
+// Reviews successful sign-ins from admin-like accounts.
+//
+// Security use cases:
+// - suspicious admin access
+// - compromised privileged account
+// - break-glass account usage
+// - unusual successful sign-ins
+//
+// Note:
+// This query uses name-based matching as a learning heuristic.
+// In a real environment, privileged users should be identified through role membership,
+// privileged access groups or identity governance data.
+
+SigninLogs
+| where TimeGenerated > ago(24h)
+| where ResultType == 0
+| where UserPrincipalName has_any ("admin", "adm", "breakglass")
+| project
+    TimeGenerated,
+    UserPrincipalName,
+    IPAddress,
+    Location,
+    DeviceDetail,
+    AppDisplayName
+| order by TimeGenerated desc
