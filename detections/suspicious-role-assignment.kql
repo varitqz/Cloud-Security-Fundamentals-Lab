@@ -1,0 +1,25 @@
+// Detection: Suspicious Role Assignment
+// Table: AuditLogs
+// Purpose:
+// Finds new Microsoft Entra ID role assignments.
+//
+// Security use cases:
+// - privilege escalation
+// - unauthorized admin access
+// - persistence
+// - suspicious identity changes
+
+AuditLogs
+| where TimeGenerated > ago(24h)
+| where Category == "RoleManagement"
+| where OperationName == "Add member to role"
+| mv-expand TargetResources
+| mv-expand TargetResources.modifiedProperties
+| project
+    TimeGenerated,
+    InitiatorUPN = tostring(InitiatedBy.user.userPrincipalName),
+    TargetUPN = tostring(TargetResources.userPrincipalName),
+    PropertyName = tostring(TargetResources.modifiedProperties.displayName),
+    NewValue = tostring(TargetResources.modifiedProperties.newValue)
+| where PropertyName == "Role.DisplayName"
+| order by TimeGenerated desc
