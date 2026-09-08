@@ -12,21 +12,61 @@ const workspaceContent =
 let signInEvents = [];
 let roleAssignments = [];
 
-let az900QuestionBank = [];
+let certificationBanks = {
+  AZ900: [],
+  SC900: []
+};
+
+let activeCertification = null;
+let activeQuestionBank = [];
 let activeQuestions = [];
 
+let currentSessionLabel = "";
+let currentRequestedCount = 0;
+
 /* =========================================================
-   STORAGE KEYS
+   CERTIFICATION CONFIG
    ========================================================= */
 
-const AZ900_ANSWERS_KEY =
-  "csfl-cloud-answers";
+const certificationConfig = {
+  AZ900: {
+    code: "AZ-900",
 
-const AZ900_WEAK_AREAS_KEY =
-  "csfl-az900-weak-areas";
+    title:
+      "Azure Fundamentals",
 
-const AZ900_LAST_MODE_KEY =
-  "csfl-az900-last-mode";
+    path:
+      "data/questions/az900.json",
+
+    answersKey:
+      "csfl-az900-answers",
+
+    weakAreasKey:
+      "csfl-az900-weak-areas",
+
+    lastModeKey:
+      "csfl-az900-last-mode"
+  },
+
+  SC900: {
+    code: "SC-900",
+
+    title:
+      "Security, Compliance & Identity Fundamentals",
+
+    path:
+      "data/questions/sc900.json",
+
+    answersKey:
+      "csfl-sc900-answers",
+
+    weakAreasKey:
+      "csfl-sc900-weak-areas",
+
+    lastModeKey:
+      "csfl-sc900-last-mode"
+  }
+};
 
 /* =========================================================
    PROGRESS SYSTEM
@@ -34,21 +74,36 @@ const AZ900_LAST_MODE_KEY =
 
 const labProgressConfig = {
   lab01: {
-    startedKey: "csfl-lab01-started",
-    completedKey: "csfl-lab01-completed",
-    statusElementId: "lab01Status"
+    startedKey:
+      "csfl-lab01-started",
+
+    completedKey:
+      "csfl-lab01-completed",
+
+    statusElementId:
+      "lab01Status"
   },
 
   lab02: {
-    startedKey: "csfl-lab02-started",
-    completedKey: "csfl-lab02-completed",
-    statusElementId: "lab02Status"
+    startedKey:
+      "csfl-lab02-started",
+
+    completedKey:
+      "csfl-lab02-completed",
+
+    statusElementId:
+      "lab02Status"
   },
 
   lab03: {
-    startedKey: "csfl-lab03-started",
-    completedKey: "csfl-lab03-completed",
-    statusElementId: "lab03Status"
+    startedKey:
+      "csfl-lab03-started",
+
+    completedKey:
+      "csfl-lab03-completed",
+
+    statusElementId:
+      "lab03Status"
   }
 };
 
@@ -62,12 +117,18 @@ const progressStorageKeys = [
   "csfl-lab03-started",
   "csfl-lab03-completed",
 
-  AZ900_ANSWERS_KEY,
-  AZ900_WEAK_AREAS_KEY,
-  AZ900_LAST_MODE_KEY,
+  "csfl-cloud-answers",
 
   "csfl-identity-decision",
-  "csfl-zero-trust-decision"
+  "csfl-zero-trust-decision",
+
+  "csfl-az900-answers",
+  "csfl-az900-weak-areas",
+  "csfl-az900-last-mode",
+
+  "csfl-sc900-answers",
+  "csfl-sc900-weak-areas",
+  "csfl-sc900-last-mode"
 ];
 
 function markLabStarted(labId) {
@@ -153,26 +214,33 @@ function updateProgressUI() {
 
   Object.entries(
     labProgressConfig
-  ).forEach(([labId, config]) => {
-    const state =
-      getLabProgressState(labId);
+  ).forEach(
+    ([labId, config]) => {
+      const state =
+        getLabProgressState(
+          labId
+        );
 
-    const statusElement =
-      document.getElementById(
-        config.statusElementId
-      );
+      const statusElement =
+        document.getElementById(
+          config.statusElementId
+        );
 
-    if (statusElement) {
-      applyProgressStatusStyle(
-        statusElement,
-        state
-      );
+      if (statusElement) {
+        applyProgressStatusStyle(
+          statusElement,
+          state
+        );
+      }
+
+      if (
+        state ===
+        "COMPLETED"
+      ) {
+        completedLabs++;
+      }
     }
-
-    if (state === "COMPLETED") {
-      completedLabs++;
-    }
-  });
+  );
 
   const totalLabs =
     Object.keys(
@@ -181,7 +249,10 @@ function updateProgressUI() {
 
   const percentage =
     Math.round(
-      (completedLabs / totalLabs) * 100
+      (
+        completedLabs /
+        totalLabs
+      ) * 100
     );
 
   const completedElement =
@@ -203,15 +274,12 @@ function updateProgressUI() {
     progressElement.textContent =
       `${percentage}%`;
 
-    if (percentage === 100) {
-      progressElement.style.color =
-        "var(--green)";
-    } else if (percentage > 0) {
-      progressElement.style.color =
-        "var(--amber)";
-    } else {
-      progressElement.style.color = "";
-    }
+    progressElement.style.color =
+      percentage === 100
+        ? "var(--green)"
+        : percentage > 0
+          ? "var(--amber)"
+          : "";
   }
 
   updateEnvironmentStatus(
@@ -230,7 +298,10 @@ function applyProgressStatusStyle(
   element.style.transition =
     "all 160ms ease";
 
-  if (state === "COMPLETED") {
+  if (
+    state ===
+    "COMPLETED"
+  ) {
     element.style.color =
       "var(--green)";
 
@@ -243,7 +314,10 @@ function applyProgressStatusStyle(
     return;
   }
 
-  if (state === "IN PROGRESS") {
+  if (
+    state ===
+    "IN PROGRESS"
+  ) {
     element.style.color =
       "var(--amber)";
 
@@ -290,7 +364,8 @@ function updateEnvironmentStatus(
     );
 
   if (
-    completedLabs === totalLabs
+    completedLabs ===
+    totalLabs
   ) {
     if (statusTitle) {
       statusTitle.textContent =
@@ -324,11 +399,8 @@ function initializeProgressControls() {
       ".status-card"
     );
 
-  if (!statusCard) {
-    return;
-  }
-
   if (
+    !statusCard ||
     document.getElementById(
       "resetProgressBtn"
     )
@@ -405,7 +477,14 @@ function resetAllProgress() {
     }
   );
 
-  activeQuestions = [];
+  activeCertification =
+    null;
+
+  activeQuestionBank =
+    [];
+
+  activeQuestions =
+    [];
 
   workspaceTitle.textContent =
     "Select a Lab";
@@ -513,36 +592,27 @@ function showSystemToast(
    ========================================================= */
 
 async function loadQuestionBank(
-  certification
+  certKey
 ) {
-  let path = "";
+  const config =
+    certificationConfig[
+      certKey
+    ];
 
-  if (
-    certification === "AZ-900"
-  ) {
-    path =
-      "data/questions/az900.json";
-  }
-
-  if (
-    certification === "SC-900"
-  ) {
-    path =
-      "data/questions/sc900.json";
-  }
-
-  if (!path) {
+  if (!config) {
     throw new Error(
       "Unknown certification."
     );
   }
 
   const response =
-    await fetch(path);
+    await fetch(
+      config.path
+    );
 
   if (!response.ok) {
     throw new Error(
-      `${certification} question bank could not be loaded.`
+      `${config.code} question bank could not be loaded.`
     );
   }
 
@@ -550,10 +620,12 @@ async function loadQuestionBank(
     await response.json();
 
   if (
-    !Array.isArray(questions)
+    !Array.isArray(
+      questions
+    )
   ) {
     throw new Error(
-      `${certification} question bank has an invalid format.`
+      `${config.code} question bank has an invalid format.`
     );
   }
 
@@ -580,7 +652,7 @@ labButtons.forEach(
             "lab01"
           );
 
-          renderCloudBasicsLab();
+          renderCertificationLab();
         }
 
         if (
@@ -605,25 +677,29 @@ labButtons.forEach(
           renderZeroTrustLab();
         }
 
-        workspaceContent.scrollIntoView({
-          behavior: "smooth",
-          block: "start"
-        });
+        workspaceContent
+          .scrollIntoView({
+            behavior:
+              "smooth",
+
+            block:
+              "start"
+          });
       }
     );
   }
 );
 
 /* =========================================================
-   LAB 01 - AZ-900 HUB
+   LAB 01 - CERTIFICATION HUB
    ========================================================= */
 
-async function renderCloudBasicsLab() {
+async function renderCertificationLab() {
   workspaceTitle.textContent =
-    "LAB 01 // AZ-900 Training";
+    "LAB 01 // Certification Training";
 
   workspaceStatus.textContent =
-    "QUESTION BANK LOADING";
+    "QUESTION BANKS LOADING";
 
   workspaceContent.innerHTML = `
     <div class="loading-state">
@@ -632,26 +708,33 @@ async function renderCloudBasicsLab() {
         root@csfl:~$
       </span>
 
-      loading data/questions/az900.json...
+      loading AZ-900 + SC-900 question banks...
 
     </div>
   `;
 
   try {
-    az900QuestionBank =
-      await loadQuestionBank(
-        "AZ-900"
-      );
+    const [
+      az900,
+      sc900
+    ] =
+      await Promise.all([
+        loadQuestionBank(
+          "AZ900"
+        ),
 
-    if (
-      az900QuestionBank.length === 0
-    ) {
-      throw new Error(
-        "AZ-900 question bank is empty."
-      );
-    }
+        loadQuestionBank(
+          "SC900"
+        )
+      ]);
 
-    renderAz900TrainingHub();
+    certificationBanks.AZ900 =
+      az900;
+
+    certificationBanks.SC900 =
+      sc900;
+
+    renderCertificationHub();
   } catch (error) {
     workspaceStatus.textContent =
       "QUESTION BANK ERROR";
@@ -660,7 +743,7 @@ async function renderCloudBasicsLab() {
       <div class="error-box">
 
         <strong>
-          AZ-900 QUESTION BANK LOAD FAILED
+          CERTIFICATION QUESTION BANK LOAD FAILED
         </strong>
 
         <p>
@@ -670,8 +753,8 @@ async function renderCloudBasicsLab() {
         </p>
 
         <p>
-          Check:
-          data/questions/az900.json
+          Check data/questions/az900.json
+          and data/questions/sc900.json.
         </p>
 
       </div>
@@ -679,29 +762,21 @@ async function renderCloudBasicsLab() {
   }
 }
 
-/* =========================================================
-   AZ-900 TRAINING HUB
-   ========================================================= */
-
-function renderAz900TrainingHub() {
+function renderCertificationHub() {
   workspaceTitle.textContent =
-    "LAB 01 // AZ-900 Training";
+    "LAB 01 // Certification Training";
 
   workspaceStatus.textContent =
-    "SELECT TRAINING MODE";
+    "SELECT CERTIFICATION";
 
-  activeQuestions = [];
+  activeCertification =
+    null;
 
-  const domains =
-    getAz900Domains();
+  activeQuestionBank =
+    [];
 
-  const weakAreas =
-    getWeakAreaIds();
-
-  const lastMode =
-    localStorage.getItem(
-      AZ900_LAST_MODE_KEY
-    ) || "NONE";
+  activeQuestions =
+    [];
 
   workspaceContent.innerHTML = `
     <div class="investigation-layout">
@@ -711,78 +786,101 @@ function renderAz900TrainingHub() {
         <div class="case-header">
 
           <div>
+
             <span class="case-id">
-              TRAINING ENGINE // AZ-900
+              CERTIFICATION HUB // CSFL
             </span>
 
             <h3>
-              Azure Fundamentals Practice
+              Choose Your Training Path
             </h3>
+
           </div>
 
           <span class="severity-badge">
-            QUESTION BANK
+            2 TRACKS
           </span>
 
         </div>
 
         <p>
-          Select a training mode.
-          Questions are loaded dynamically from
-          the local AZ-900 question bank.
+          Both certifications use the same
+          adaptive training engine, but keep
+          separate answers, weak areas and
+          training state.
         </p>
 
         <div class="case-indicators">
 
-          ${domains
-            .map(
-              (domain) => `
-                <span>
-                  ${escapeHtml(domain)}
-                </span>
-              `
-            )
-            .join("")}
+          <span>AZ-900</span>
+          <span>SC-900</span>
+          <span>100 Questions</span>
+          <span>Adaptive Training</span>
 
         </div>
 
       </section>
+
 
       <section class="investigation-stats">
 
         <div>
-          <span>QUESTION BANK</span>
+          <span>
+            AZ-900 QUESTIONS
+          </span>
 
           <strong>
-            ${az900QuestionBank.length}
+            ${
+              certificationBanks
+                .AZ900
+                .length
+            }
           </strong>
         </div>
 
         <div>
-          <span>DOMAINS</span>
+          <span>
+            SC-900 QUESTIONS
+          </span>
 
           <strong>
-            ${domains.length}
+            ${
+              certificationBanks
+                .SC900
+                .length
+            }
           </strong>
         </div>
 
         <div>
-          <span>WEAK AREAS</span>
+          <span>
+            TOTAL QUESTIONS
+          </span>
 
           <strong>
-            ${weakAreas.length}
+            ${
+              certificationBanks
+                .AZ900
+                .length +
+              certificationBanks
+                .SC900
+                .length
+            }
           </strong>
         </div>
 
         <div>
-          <span>LAST MODE</span>
+          <span>
+            TRAINING ENGINE
+          </span>
 
           <strong>
-            ${escapeHtml(lastMode)}
+            ACTIVE
           </strong>
         </div>
 
       </section>
+
 
       <section class="event-console">
 
@@ -793,7 +891,322 @@ function renderAz900TrainingHub() {
               root@csfl:~$
             </span>
 
-            select training-mode
+            select AZ-900
+          </div>
+
+        </div>
+
+        <div class="workspace-content">
+
+          <h3>
+            AZ-900 // Azure Fundamentals
+          </h3>
+
+          <p>
+            Cloud concepts, Azure architecture
+            and services, management and governance.
+          </p>
+
+          <p>
+            <strong>
+              ${
+                certificationBanks
+                  .AZ900
+                  .length
+              }
+            </strong>
+            questions available.
+          </p>
+
+          <div class="decision-actions">
+
+            <button id="openAz900Btn">
+              Open AZ-900 Training
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+
+      <section class="event-console">
+
+        <div class="console-header">
+
+          <div>
+            <span class="terminal-prompt">
+              root@csfl:~$
+            </span>
+
+            select SC-900
+          </div>
+
+        </div>
+
+        <div class="workspace-content">
+
+          <h3>
+            SC-900 // Security,
+            Compliance & Identity Fundamentals
+          </h3>
+
+          <p>
+            Zero Trust, Microsoft Entra,
+            Defender, Sentinel,
+            Microsoft Purview and compliance.
+          </p>
+
+          <p>
+            <strong>
+              ${
+                certificationBanks
+                  .SC900
+                  .length
+              }
+            </strong>
+            questions available.
+          </p>
+
+          <div class="decision-actions">
+
+            <button id="openSc900Btn">
+              Open SC-900 Training
+            </button>
+
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+  `;
+
+  document
+    .getElementById(
+      "openAz900Btn"
+    )
+    .addEventListener(
+      "click",
+      () => {
+        openCertificationTraining(
+          "AZ900"
+        );
+      }
+    );
+
+  document
+    .getElementById(
+      "openSc900Btn"
+    )
+    .addEventListener(
+      "click",
+      () => {
+        openCertificationTraining(
+          "SC900"
+        );
+      }
+    );
+}
+
+/* =========================================================
+   CERTIFICATION TRAINING HUB
+   ========================================================= */
+
+function openCertificationTraining(
+  certKey
+) {
+  const config =
+    certificationConfig[
+      certKey
+    ];
+
+  const bank =
+    certificationBanks[
+      certKey
+    ];
+
+  if (
+    !config ||
+    !Array.isArray(bank) ||
+    bank.length === 0
+  ) {
+    showSystemToast(
+      "QUESTION BANK // NOT AVAILABLE",
+      "warning"
+    );
+
+    return;
+  }
+
+  activeCertification =
+    certKey;
+
+  activeQuestionBank =
+    bank;
+
+  activeQuestions =
+    [];
+
+  renderTrainingModeHub();
+}
+
+function renderTrainingModeHub() {
+  if (
+    !activeCertification
+  ) {
+    renderCertificationHub();
+
+    return;
+  }
+
+  const config =
+    certificationConfig[
+      activeCertification
+    ];
+
+  const domains =
+    getActiveDomains();
+
+  const weakAreas =
+    getWeakAreaIds();
+
+  const lastMode =
+    localStorage.getItem(
+      config.lastModeKey
+    ) || "NONE";
+
+  workspaceTitle.textContent =
+    `LAB 01 // ${config.code} Training`;
+
+  workspaceStatus.textContent =
+    "SELECT TRAINING MODE";
+
+  workspaceContent.innerHTML = `
+    <div class="investigation-layout">
+
+      <section class="case-panel">
+
+        <div class="case-header">
+
+          <div>
+
+            <span class="case-id">
+              TRAINING ENGINE //
+              ${escapeHtml(
+                config.code
+              )}
+            </span>
+
+            <h3>
+              ${escapeHtml(
+                config.title
+              )}
+            </h3>
+
+          </div>
+
+          <span class="severity-badge">
+            QUESTION BANK
+          </span>
+
+        </div>
+
+        <p>
+          Select a training mode.
+          Weak areas and saved state are
+          isolated for
+          ${escapeHtml(
+            config.code
+          )}.
+        </p>
+
+        <div class="case-indicators">
+
+          ${domains
+            .map(
+              (domain) => `
+                <span>
+                  ${escapeHtml(
+                    domain
+                  )}
+                </span>
+              `
+            )
+            .join("")}
+
+        </div>
+
+      </section>
+
+
+      <section class="investigation-stats">
+
+        <div>
+
+          <span>
+            QUESTION BANK
+          </span>
+
+          <strong>
+            ${activeQuestionBank.length}
+          </strong>
+
+        </div>
+
+        <div>
+
+          <span>
+            DOMAINS
+          </span>
+
+          <strong>
+            ${domains.length}
+          </strong>
+
+        </div>
+
+        <div>
+
+          <span>
+            WEAK AREAS
+          </span>
+
+          <strong>
+            ${weakAreas.length}
+          </strong>
+
+        </div>
+
+        <div>
+
+          <span>
+            LAST MODE
+          </span>
+
+          <strong>
+            ${escapeHtml(
+              lastMode
+            )}
+          </strong>
+
+        </div>
+
+      </section>
+
+
+      <section class="event-console">
+
+        <div class="console-header">
+
+          <div>
+            <span class="terminal-prompt">
+              root@csfl:~$
+            </span>
+
+            quick-practice
           </div>
 
         </div>
@@ -805,30 +1218,41 @@ function renderAz900TrainingHub() {
           </h3>
 
           <p>
-            Up to 10 random questions
-            from the full AZ-900 bank.
+            10 random questions from
+            the full
+            ${escapeHtml(
+              config.code
+            )}
+            bank.
           </p>
 
           <div class="decision-actions">
-            <button id="startQuickPracticeBtn">
+
+            <button
+              id="startQuickPracticeBtn"
+            >
               Start 10 Questions
             </button>
+
           </div>
 
         </div>
 
       </section>
 
+
       <section class="event-console">
 
         <div class="console-header">
 
           <div>
+
             <span class="terminal-prompt">
               root@csfl:~$
             </span>
 
             study-session
+
           </div>
 
         </div>
@@ -840,30 +1264,37 @@ function renderAz900TrainingHub() {
           </h3>
 
           <p>
-            Up to 20 random questions
-            for a longer learning block.
+            20 random questions for
+            a longer learning block.
           </p>
 
           <div class="decision-actions">
-            <button id="startStudySessionBtn">
+
+            <button
+              id="startStudySessionBtn"
+            >
               Start 20 Questions
             </button>
+
           </div>
 
         </div>
 
       </section>
 
+
       <section class="event-console">
 
         <div class="console-header">
 
           <div>
+
             <span class="terminal-prompt">
               root@csfl:~$
             </span>
 
             full-block
+
           </div>
 
         </div>
@@ -875,41 +1306,54 @@ function renderAz900TrainingHub() {
           </h3>
 
           <p>
-            Up to 50 random questions.
-            This will become the main exam-style
-            training mode once the bank contains
-            50+ questions.
+            50 questions for a
+            complete training block.
           </p>
 
           <div class="decision-actions">
-            <button id="startFullBlockBtn">
+
+            <button
+              id="startFullBlockBtn"
+            >
               Start 50 Questions
             </button>
+
           </div>
 
         </div>
 
       </section>
 
+
       <section class="event-console">
 
         <div class="console-header">
 
           <div>
+
             <span class="terminal-prompt">
               root@csfl:~$
             </span>
 
             domain-practice
+
           </div>
 
-          <select id="domainPracticeSelect">
+          <select
+            id="domainPracticeSelect"
+          >
 
             ${domains
               .map(
                 (domain) => `
-                  <option value="${escapeHtml(domain)}">
-                    ${escapeHtml(domain)}
+                  <option
+                    value="${escapeHtml(
+                      domain
+                    )}"
+                  >
+                    ${escapeHtml(
+                      domain
+                    )}
                   </option>
                 `
               )
@@ -926,30 +1370,37 @@ function renderAz900TrainingHub() {
           </h3>
 
           <p>
-            Practice only questions from
-            one AZ-900 domain.
+            Practice one certification
+            domain at a time.
           </p>
 
           <div class="decision-actions">
-            <button id="startDomainPracticeBtn">
+
+            <button
+              id="startDomainPracticeBtn"
+            >
               Start Domain
             </button>
+
           </div>
 
         </div>
 
       </section>
 
+
       <section class="event-console">
 
         <div class="console-header">
 
           <div>
+
             <span class="terminal-prompt">
               root@csfl:~$
             </span>
 
             weak-areas
+
           </div>
 
         </div>
@@ -961,8 +1412,8 @@ function renderAz900TrainingHub() {
           </h3>
 
           <p>
-            Retry questions that you previously
-            answered incorrectly.
+            Retry questions that were
+            previously answered incorrectly.
           </p>
 
           <p>
@@ -973,14 +1424,39 @@ function renderAz900TrainingHub() {
           </p>
 
           <div class="decision-actions">
-            <button id="startWeakAreasBtn">
+
+            <button
+              id="startWeakAreasBtn"
+            >
               Retry Weak Areas
             </button>
 
-            <button id="clearWeakAreasBtn">
+            <button
+              id="clearWeakAreasBtn"
+            >
               Clear Weak Areas
             </button>
+
           </div>
+
+        </div>
+
+      </section>
+
+
+      <section class="decision-panel">
+
+        <span class="panel-label">
+          NAVIGATION
+        </span>
+
+        <div class="decision-actions">
+
+          <button
+            id="backToCertificationHubBtn"
+          >
+            Certification Hub
+          </button>
 
         </div>
 
@@ -996,7 +1472,7 @@ function renderAz900TrainingHub() {
     .addEventListener(
       "click",
       () => {
-        startAz900Practice(
+        startPractice(
           "QUICK",
           10
         );
@@ -1010,7 +1486,7 @@ function renderAz900TrainingHub() {
     .addEventListener(
       "click",
       () => {
-        startAz900Practice(
+        startPractice(
           "STUDY",
           20
         );
@@ -1024,7 +1500,7 @@ function renderAz900TrainingHub() {
     .addEventListener(
       "click",
       () => {
-        startAz900Practice(
+        startPractice(
           "FULL",
           50
         );
@@ -1057,28 +1533,42 @@ function renderAz900TrainingHub() {
       "click",
       clearWeakAreas
     );
+
+  document
+    .getElementById(
+      "backToCertificationHubBtn"
+    )
+    .addEventListener(
+      "click",
+      renderCertificationHub
+    );
 }
 
 /* =========================================================
-   AZ-900 MODES
+   PRACTICE MODES
    ========================================================= */
 
-function startAz900Practice(
+function startPractice(
   mode,
   requestedCount
 ) {
+  const config =
+    certificationConfig[
+      activeCertification
+    ];
+
   localStorage.removeItem(
-    AZ900_ANSWERS_KEY
+    config.answersKey
   );
 
   localStorage.setItem(
-    AZ900_LAST_MODE_KEY,
+    config.lastModeKey,
     mode
   );
 
   const shuffled =
     shuffleArray(
-      az900QuestionBank
+      activeQuestionBank
     );
 
   const actualCount =
@@ -1093,23 +1583,28 @@ function startAz900Practice(
       actualCount
     );
 
-  renderAz900PracticeSession(
-    mode,
-    requestedCount
-  );
+  currentSessionLabel =
+    mode;
+
+  currentRequestedCount =
+    requestedCount;
+
+  renderPracticeSession();
 }
 
 function startDomainPractice() {
-  const select =
-    document.getElementById(
-      "domainPracticeSelect"
-    );
+  const config =
+    certificationConfig[
+      activeCertification
+    ];
 
   const selectedDomain =
-    select.value;
+    document.getElementById(
+      "domainPracticeSelect"
+    ).value;
 
   const domainQuestions =
-    az900QuestionBank.filter(
+    activeQuestionBank.filter(
       (question) =>
         question.domain ===
         selectedDomain
@@ -1127,11 +1622,11 @@ function startDomainPractice() {
   }
 
   localStorage.removeItem(
-    AZ900_ANSWERS_KEY
+    config.answersKey
   );
 
   localStorage.setItem(
-    AZ900_LAST_MODE_KEY,
+    config.lastModeKey,
     "DOMAIN"
   );
 
@@ -1140,13 +1635,21 @@ function startDomainPractice() {
       domainQuestions
     );
 
-  renderAz900PracticeSession(
-    `DOMAIN // ${selectedDomain}`,
-    activeQuestions.length
-  );
+  currentSessionLabel =
+    `DOMAIN // ${selectedDomain}`;
+
+  currentRequestedCount =
+    activeQuestions.length;
+
+  renderPracticeSession();
 }
 
 function startWeakAreaPractice() {
+  const config =
+    certificationConfig[
+      activeCertification
+    ];
+
   const weakIds =
     getWeakAreaIds();
 
@@ -1162,7 +1665,7 @@ function startWeakAreaPractice() {
   }
 
   const weakQuestions =
-    az900QuestionBank.filter(
+    activeQuestionBank.filter(
       (question) =>
         weakIds.includes(
           question.id
@@ -1181,11 +1684,11 @@ function startWeakAreaPractice() {
   }
 
   localStorage.removeItem(
-    AZ900_ANSWERS_KEY
+    config.answersKey
   );
 
   localStorage.setItem(
-    AZ900_LAST_MODE_KEY,
+    config.lastModeKey,
     "WEAK AREAS"
   );
 
@@ -1194,44 +1697,54 @@ function startWeakAreaPractice() {
       weakQuestions
     );
 
-  renderAz900PracticeSession(
-    "WEAK AREAS",
-    activeQuestions.length
-  );
+  currentSessionLabel =
+    "WEAK AREAS";
+
+  currentRequestedCount =
+    activeQuestions.length;
+
+  renderPracticeSession();
 }
 
 function clearWeakAreas() {
+  const config =
+    certificationConfig[
+      activeCertification
+    ];
+
   localStorage.removeItem(
-    AZ900_WEAK_AREAS_KEY
+    config.weakAreasKey
   );
 
   showSystemToast(
-    "WEAK AREAS // CLEARED",
+    `${config.code} // WEAK AREAS CLEARED`,
     "warning"
   );
 
-  renderAz900TrainingHub();
+  renderTrainingModeHub();
 }
 
 /* =========================================================
-   AZ-900 PRACTICE SESSION
+   PRACTICE SESSION
    ========================================================= */
 
-function renderAz900PracticeSession(
-  mode,
-  requestedCount
-) {
-  workspaceTitle.textContent =
-    `LAB 01 // ${mode}`;
-
-  workspaceStatus.textContent =
-    "TRAINING ACTIVE";
+function renderPracticeSession() {
+  const config =
+    certificationConfig[
+      activeCertification
+    ];
 
   const availableNotice =
     activeQuestions.length <
-    requestedCount
-      ? `${activeQuestions.length} available / ${requestedCount} requested`
+    currentRequestedCount
+      ? `${activeQuestions.length} available / ${currentRequestedCount} requested`
       : `${activeQuestions.length} questions`;
+
+  workspaceTitle.textContent =
+    `LAB 01 // ${config.code} // ${currentSessionLabel}`;
+
+  workspaceStatus.textContent =
+    "TRAINING ACTIVE";
 
   workspaceContent.innerHTML = `
     <div class="investigation-layout">
@@ -1243,11 +1756,20 @@ function renderAz900PracticeSession(
           <div>
 
             <span class="case-id">
-              AZ-900 // ${escapeHtml(mode)}
+              ${escapeHtml(
+                config.code
+              )}
+              //
+              ${escapeHtml(
+                currentSessionLabel
+              )}
             </span>
 
             <h3>
-              Azure Fundamentals Training Session
+              ${escapeHtml(
+                config.title
+              )}
+              Training Session
             </h3>
 
           </div>
@@ -1261,57 +1783,78 @@ function renderAz900PracticeSession(
         </div>
 
         <p>
-          Complete the session and submit
-          your answers for scoring.
+          Complete the session and
+          submit your answers for scoring.
         </p>
 
         <p>
           Local training pass threshold:
           <strong>80%</strong>.
-          This is a project training threshold,
+          This is a project threshold,
           not Microsoft's exam scoring formula.
         </p>
 
       </section>
 
+
       <section class="investigation-stats">
 
         <div>
-          <span>SESSION QUESTIONS</span>
+
+          <span>
+            SESSION QUESTIONS
+          </span>
 
           <strong>
             ${activeQuestions.length}
           </strong>
+
         </div>
 
         <div>
-          <span>ANSWERED</span>
+
+          <span>
+            ANSWERED
+          </span>
 
           <strong id="cloudAnsweredCount">
             0
           </strong>
+
         </div>
 
         <div>
-          <span>CORRECT</span>
+
+          <span>
+            CORRECT
+          </span>
 
           <strong id="cloudCorrectCount">
             0
           </strong>
+
         </div>
 
         <div>
-          <span>SCORE</span>
+
+          <span>
+            SCORE
+          </span>
 
           <strong id="cloudScore">
             0%
           </strong>
+
         </div>
 
       </section>
 
-      <div id="cloudQuestionContainer">
+
+      <div
+        id="cloudQuestionContainer"
+      >
       </div>
+
 
       <section class="decision-panel">
 
@@ -1321,21 +1864,35 @@ function renderAz900PracticeSession(
 
         <div class="decision-actions">
 
-          <button id="checkCloudAnswersBtn">
+          <button
+            id="checkCloudAnswersBtn"
+          >
             Check Answers
           </button>
 
-          <button id="restartSessionBtn">
+          <button
+            id="restartSessionBtn"
+          >
             Restart Session
           </button>
 
-          <button id="backToModesBtn">
+          <button
+            id="backToModesBtn"
+          >
             Training Modes
+          </button>
+
+          <button
+            id="backToCertificationHubBtn"
+          >
+            Certification Hub
           </button>
 
         </div>
 
-        <div id="cloudChallengeStatus">
+        <div
+          id="cloudChallengeStatus"
+        >
         </div>
 
       </section>
@@ -1345,13 +1902,15 @@ function renderAz900PracticeSession(
 
   renderActiveQuestions();
 
+  loadSessionAnswers();
+
   document
     .getElementById(
       "checkCloudAnswersBtn"
     )
     .addEventListener(
       "click",
-      checkAz900Answers
+      checkPracticeAnswers
     );
 
   document
@@ -1360,7 +1919,7 @@ function renderAz900PracticeSession(
     )
     .addEventListener(
       "click",
-      restartCurrentAz900Session
+      restartCurrentSession
     );
 
   document
@@ -1369,7 +1928,16 @@ function renderAz900PracticeSession(
     )
     .addEventListener(
       "click",
-      renderAz900TrainingHub
+      renderTrainingModeHub
+    );
+
+  document
+    .getElementById(
+      "backToCertificationHubBtn"
+    )
+    .addEventListener(
+      "click",
+      renderCertificationHub
     );
 }
 
@@ -1382,15 +1950,22 @@ function renderActiveQuestions() {
   container.innerHTML =
     activeQuestions
       .map(
-        (question, index) => {
+        (
+          question,
+          index
+        ) => {
           const options =
             question.options
               .map(
                 (option) => `
                   <option
-                    value="${escapeHtml(option)}"
+                    value="${escapeHtml(
+                      option
+                    )}"
                   >
-                    ${escapeHtml(option)}
+                    ${escapeHtml(
+                      option
+                    )}
                   </option>
                 `
               )
@@ -1409,7 +1984,8 @@ function renderActiveQuestions() {
                     ).padStart(
                       2,
                       "0"
-                    )} //
+                    )}
+                    //
                   </span>
 
                   ${escapeHtml(
@@ -1418,7 +1994,10 @@ function renderActiveQuestions() {
 
                   [
                   ${escapeHtml(
-                    question.difficulty.toUpperCase()
+                    (
+                      question.difficulty ||
+                      "medium"
+                    ).toUpperCase()
                   )}
                   ]
 
@@ -1441,6 +2020,7 @@ function renderActiveQuestions() {
 
               </div>
 
+
               <div class="workspace-content">
 
                 <p>
@@ -1456,6 +2036,7 @@ function renderActiveQuestions() {
                 </p>
 
               </div>
+
 
               <div
                 id="${escapeHtml(
@@ -1479,22 +2060,23 @@ function renderActiveQuestions() {
       (select) => {
         select.addEventListener(
           "change",
-          handleAz900AnswerChange
+          handleAnswerChange
         );
       }
     );
 }
 
 /* =========================================================
-   AZ-900 ANSWERS
+   QUESTION ANSWERS
    ========================================================= */
 
-function handleAz900AnswerChange() {
-  updateAz900AnsweredCount();
-  saveAz900SessionAnswers();
+function handleAnswerChange() {
+  updateAnsweredCount();
+
+  saveSessionAnswers();
 }
 
-function updateAz900AnsweredCount() {
+function updateAnsweredCount() {
   const selects = [
     ...document.querySelectorAll(
       ".cloud-answer"
@@ -1518,7 +2100,12 @@ function updateAz900AnsweredCount() {
   }
 }
 
-function saveAz900SessionAnswers() {
+function saveSessionAnswers() {
+  const config =
+    certificationConfig[
+      activeCertification
+    ];
+
   const answers = {};
 
   activeQuestions.forEach(
@@ -1537,14 +2124,62 @@ function saveAz900SessionAnswers() {
   );
 
   localStorage.setItem(
-    AZ900_ANSWERS_KEY,
+    config.answersKey,
     JSON.stringify(
       answers
     )
   );
 }
 
-function checkAz900Answers() {
+function loadSessionAnswers() {
+  const config =
+    certificationConfig[
+      activeCertification
+    ];
+
+  const raw =
+    localStorage.getItem(
+      config.answersKey
+    );
+
+  if (!raw) {
+    return;
+  }
+
+  try {
+    const answers =
+      JSON.parse(raw);
+
+    Object.entries(
+      answers
+    ).forEach(
+      ([id, value]) => {
+        const select =
+          document.getElementById(
+            id
+          );
+
+        if (select) {
+          select.value =
+            value;
+        }
+      }
+    );
+
+    updateAnsweredCount();
+  } catch {
+    localStorage.removeItem(
+      config.answersKey
+    );
+  }
+}
+
+function checkPracticeAnswers() {
+  const config =
+    certificationConfig[
+      activeCertification
+    ];
+
   let correct = 0;
   let answered = 0;
 
@@ -1641,7 +2276,7 @@ function checkAz900Answers() {
     }
   );
 
-  saveAz900SessionAnswers();
+  saveSessionAnswers();
 
   saveWeakAreaIds(
     [...weakAreas]
@@ -1692,7 +2327,7 @@ function checkAz900Answers() {
     score >= 80
   ) {
     status.textContent =
-      `PASSED // ${correct}/${activeQuestions.length} correct (${score}%).`;
+      `PASSED // ${correct}/${activeQuestions.length} correct (${score}%). ${config.code} session passed.`;
 
     status.className =
       "decision-success";
@@ -1711,9 +2346,14 @@ function checkAz900Answers() {
     "decision-error";
 }
 
-function restartCurrentAz900Session() {
+function restartCurrentSession() {
+  const config =
+    certificationConfig[
+      activeCertification
+    ];
+
   localStorage.removeItem(
-    AZ900_ANSWERS_KEY
+    config.answersKey
   );
 
   activeQuestions =
@@ -1721,15 +2361,10 @@ function restartCurrentAz900Session() {
       activeQuestions
     );
 
-  renderAz900PracticeSession(
-    localStorage.getItem(
-      AZ900_LAST_MODE_KEY
-    ) || "PRACTICE",
-    activeQuestions.length
-  );
+  renderPracticeSession();
 
   showSystemToast(
-    "AZ-900 // SESSION RESTARTED",
+    `${config.code} // SESSION RESTARTED`,
     "warning"
   );
 }
@@ -1739,9 +2374,18 @@ function restartCurrentAz900Session() {
    ========================================================= */
 
 function getWeakAreaIds() {
+  const config =
+    certificationConfig[
+      activeCertification
+    ];
+
+  if (!config) {
+    return [];
+  }
+
   const raw =
     localStorage.getItem(
-      AZ900_WEAK_AREAS_KEY
+      config.weakAreasKey
     );
 
   if (!raw) {
@@ -1752,34 +2396,43 @@ function getWeakAreaIds() {
     const parsed =
       JSON.parse(raw);
 
-    return Array.isArray(parsed)
+    return Array.isArray(
+      parsed
+    )
       ? parsed
       : [];
   } catch {
     localStorage.removeItem(
-      AZ900_WEAK_AREAS_KEY
+      config.weakAreasKey
     );
 
     return [];
   }
 }
 
-function saveWeakAreaIds(ids) {
+function saveWeakAreaIds(
+  ids
+) {
+  const config =
+    certificationConfig[
+      activeCertification
+    ];
+
   const uniqueIds =
     [...new Set(ids)];
 
   localStorage.setItem(
-    AZ900_WEAK_AREAS_KEY,
+    config.weakAreasKey,
     JSON.stringify(
       uniqueIds
     )
   );
 }
 
-function getAz900Domains() {
+function getActiveDomains() {
   return [
     ...new Set(
-      az900QuestionBank
+      activeQuestionBank
         .map(
           (question) =>
             question.domain
@@ -1862,6 +2515,7 @@ function renderIdentityWorkspace(
         <div class="case-header">
 
           <div>
+
             <span class="case-id">
               CASE // IAM-002
             </span>
@@ -1869,6 +2523,7 @@ function renderIdentityWorkspace(
             <h3>
               Privileged Access Review
             </h3>
+
           </div>
 
           <span class="severity-badge">
@@ -1884,48 +2539,74 @@ function renderIdentityWorkspace(
         </p>
 
         <div class="case-indicators">
+
           <span>Privileged Roles</span>
           <span>Least Privilege</span>
           <span>MFA</span>
           <span>Unexpected Access</span>
+
         </div>
 
       </section>
+
 
       <section class="investigation-stats">
 
         <div>
-          <span>TOTAL ASSIGNMENTS</span>
-          <strong id="totalAssignments">0</strong>
+          <span>
+            TOTAL ASSIGNMENTS
+          </span>
+
+          <strong id="totalAssignments">
+            0
+          </strong>
         </div>
 
         <div>
-          <span>PRIVILEGED</span>
-          <strong id="privilegedAssignments">0</strong>
+          <span>
+            PRIVILEGED
+          </span>
+
+          <strong id="privilegedAssignments">
+            0
+          </strong>
         </div>
 
         <div>
-          <span>UNEXPECTED</span>
-          <strong id="unexpectedAssignments">0</strong>
+          <span>
+            UNEXPECTED
+          </span>
+
+          <strong id="unexpectedAssignments">
+            0
+          </strong>
         </div>
 
         <div>
-          <span>HIGH / CRITICAL</span>
-          <strong id="dangerousAssignments">0</strong>
+          <span>
+            HIGH / CRITICAL
+          </span>
+
+          <strong id="dangerousAssignments">
+            0
+          </strong>
         </div>
 
       </section>
+
 
       <section class="event-console">
 
         <div class="console-header">
 
           <div>
+
             <span class="terminal-prompt">
               root@csfl:~$
             </span>
 
             inspect role-assignments.csv
+
           </div>
 
           <select id="identityFilter">
@@ -1959,6 +2640,7 @@ function renderIdentityWorkspace(
           <table class="event-table">
 
             <thead>
+
               <tr>
                 <th>USER</th>
                 <th>JOB ROLE</th>
@@ -1969,17 +2651,20 @@ function renderIdentityWorkspace(
                 <th>EXPECTED</th>
                 <th>RISK</th>
               </tr>
+
             </thead>
 
             <tbody
               id="identityTableBody"
-            ></tbody>
+            >
+            </tbody>
 
           </table>
 
         </div>
 
       </section>
+
 
       <section class="investigation-bottom">
 
@@ -2001,7 +2686,8 @@ function renderIdentityWorkspace(
 
           <label>
             <input type="checkbox" />
-            Identify privileged accounts without MFA.
+            Identify privileged accounts
+            without MFA.
           </label>
 
           <label>
@@ -2010,6 +2696,7 @@ function renderIdentityWorkspace(
           </label>
 
         </div>
+
 
         <div class="decision-panel">
 
@@ -2044,11 +2731,13 @@ Additional checks:"
 
           <div
             id="identityDecisionStatus"
-          ></div>
+          >
+          </div>
 
         </div>
 
       </section>
+
 
       <section
         id="identityExpectedFinding"
@@ -2138,29 +2827,6 @@ Additional checks:"
 function updateIdentityStats(
   assignments
 ) {
-  const privileged =
-    assignments.filter(
-      (item) =>
-        item.Privileged ===
-        "true"
-    );
-
-  const unexpected =
-    assignments.filter(
-      (item) =>
-        item.ExpectedAccess ===
-        "false"
-    );
-
-  const dangerous =
-    assignments.filter(
-      (item) =>
-        item.RiskLevel ===
-          "high" ||
-        item.RiskLevel ===
-          "critical"
-    );
-
   document.getElementById(
     "totalAssignments"
   ).textContent =
@@ -2169,30 +2835,47 @@ function updateIdentityStats(
   document.getElementById(
     "privilegedAssignments"
   ).textContent =
-    privileged.length;
+    assignments.filter(
+      (item) =>
+        item.Privileged ===
+        "true"
+    ).length;
 
   document.getElementById(
     "unexpectedAssignments"
   ).textContent =
-    unexpected.length;
+    assignments.filter(
+      (item) =>
+        item.ExpectedAccess ===
+        "false"
+    ).length;
 
   document.getElementById(
     "dangerousAssignments"
   ).textContent =
-    dangerous.length;
+    assignments.filter(
+      (item) =>
+        [
+          "high",
+          "critical"
+        ].includes(
+          item.RiskLevel
+        )
+    ).length;
 }
 
 function handleIdentityFilter(
   event
 ) {
-  let filtered =
-    [...roleAssignments];
-
   const filter =
     event.target.value;
 
+  let filtered =
+    [...roleAssignments];
+
   if (
-    filter === "privileged"
+    filter ===
+    "privileged"
   ) {
     filtered =
       roleAssignments.filter(
@@ -2203,7 +2886,8 @@ function handleIdentityFilter(
   }
 
   if (
-    filter === "unexpected"
+    filter ===
+    "unexpected"
   ) {
     filtered =
       roleAssignments.filter(
@@ -2214,7 +2898,8 @@ function handleIdentityFilter(
   }
 
   if (
-    filter === "no-mfa"
+    filter ===
+    "no-mfa"
   ) {
     filtered =
       roleAssignments.filter(
@@ -2225,15 +2910,18 @@ function handleIdentityFilter(
   }
 
   if (
-    filter === "dangerous"
+    filter ===
+    "dangerous"
   ) {
     filtered =
       roleAssignments.filter(
         (item) =>
-          item.RiskLevel ===
-            "high" ||
-          item.RiskLevel ===
+          [
+            "high",
             "critical"
+          ].includes(
+            item.RiskLevel
+          )
       );
   }
 
@@ -2340,7 +3028,9 @@ function renderIdentityTable(
                   assignment.RiskLevel
                 )}">
                   ${escapeHtml(
-                    assignment.RiskLevel.toUpperCase()
+                    assignment
+                      .RiskLevel
+                      .toUpperCase()
                   )}
                 </span>
               </td>
@@ -2498,6 +3188,7 @@ function renderZeroTrustWorkspace(
         <div class="case-header">
 
           <div>
+
             <span class="case-id">
               CASE // ZT-003
             </span>
@@ -2505,6 +3196,7 @@ function renderZeroTrustWorkspace(
             <h3>
               Suspicious Cloud Sign-in Activity
             </h3>
+
           </div>
 
           <span class="severity-badge">
@@ -2519,48 +3211,74 @@ function renderZeroTrustWorkspace(
         </p>
 
         <div class="case-indicators">
+
           <span>Unknown devices</span>
           <span>No MFA</span>
           <span>Foreign locations</span>
           <span>Failed → Success</span>
+
         </div>
 
       </section>
+
 
       <section class="investigation-stats">
 
         <div>
-          <span>TOTAL EVENTS</span>
-          <strong id="totalEvents">0</strong>
+          <span>
+            TOTAL EVENTS
+          </span>
+
+          <strong id="totalEvents">
+            0
+          </strong>
         </div>
 
         <div>
-          <span>FAILED</span>
-          <strong id="failedEvents">0</strong>
+          <span>
+            FAILED
+          </span>
+
+          <strong id="failedEvents">
+            0
+          </strong>
         </div>
 
         <div>
-          <span>HIGH RISK</span>
-          <strong id="highRiskEvents">0</strong>
+          <span>
+            HIGH RISK
+          </span>
+
+          <strong id="highRiskEvents">
+            0
+          </strong>
         </div>
 
         <div>
-          <span>NO MFA SUCCESS</span>
-          <strong id="noMfaEvents">0</strong>
+          <span>
+            NO MFA SUCCESS
+          </span>
+
+          <strong id="noMfaEvents">
+            0
+          </strong>
         </div>
 
       </section>
+
 
       <section class="event-console">
 
         <div class="console-header">
 
           <div>
+
             <span class="terminal-prompt">
               root@csfl:~$
             </span>
 
             inspect signin-events.csv
+
           </div>
 
           <select id="eventFilter">
@@ -2594,6 +3312,7 @@ function renderZeroTrustWorkspace(
           <table class="event-table">
 
             <thead>
+
               <tr>
                 <th>TIME</th>
                 <th>USER</th>
@@ -2605,17 +3324,20 @@ function renderZeroTrustWorkspace(
                 <th>MFA</th>
                 <th>RISK</th>
               </tr>
+
             </thead>
 
             <tbody
               id="eventTableBody"
-            ></tbody>
+            >
+            </tbody>
 
           </table>
 
         </div>
 
       </section>
+
 
       <section class="investigation-bottom">
 
@@ -2648,6 +3370,7 @@ function renderZeroTrustWorkspace(
 
         </div>
 
+
         <div class="decision-panel">
 
           <span class="panel-label">
@@ -2662,11 +3385,15 @@ function renderZeroTrustWorkspace(
 
           <div class="decision-actions">
 
-            <button id="saveDecisionBtn">
+            <button
+              id="saveDecisionBtn"
+            >
               Save Decision
             </button>
 
-            <button id="revealFindingBtn">
+            <button
+              id="revealFindingBtn"
+            >
               Reveal Expected Finding
             </button>
 
@@ -2674,11 +3401,13 @@ function renderZeroTrustWorkspace(
 
           <div
             id="decisionStatus"
-          ></div>
+          >
+          </div>
 
         </div>
 
       </section>
+
 
       <section
         id="expectedFinding"
@@ -2808,14 +3537,15 @@ function updateZeroTrustStats(
 function handleEventFilter(
   event
 ) {
-  let filtered =
-    [...signInEvents];
-
   const filter =
     event.target.value;
 
+  let filtered =
+    [...signInEvents];
+
   if (
-    filter === "failed"
+    filter ===
+    "failed"
   ) {
     filtered =
       signInEvents.filter(
@@ -2826,7 +3556,8 @@ function handleEventFilter(
   }
 
   if (
-    filter === "no-mfa"
+    filter ===
+    "no-mfa"
   ) {
     filtered =
       signInEvents.filter(
@@ -2839,7 +3570,8 @@ function handleEventFilter(
   }
 
   if (
-    filter === "high-risk"
+    filter ===
+    "high-risk"
   ) {
     filtered =
       signInEvents.filter(
@@ -2948,7 +3680,9 @@ function renderEventTable(
                   event.RiskLevel
                 )}">
                   ${escapeHtml(
-                    event.RiskLevel.toUpperCase()
+                    event
+                      .RiskLevel
+                      .toUpperCase()
                   )}
                 </span>
               </td>
@@ -3071,9 +3805,14 @@ function parseCsv(csvText) {
         const entry = {};
 
         headers.forEach(
-          (header, index) => {
+          (
+            header,
+            index
+          ) => {
             entry[header] =
-              values[index]?.trim() ??
+              values[
+                index
+              ]?.trim() ??
               "";
           }
         );
@@ -3132,15 +3871,15 @@ function getRiskClass(level) {
   return "risk-low";
 }
 
-function formatTime(
-  timestamp
-) {
+function formatTime(timestamp) {
   if (!timestamp) {
     return "";
   }
 
   if (
-    timestamp.includes("T")
+    timestamp.includes(
+      "T"
+    )
   ) {
     return timestamp
       .split("T")[1]
