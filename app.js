@@ -11,7 +11,22 @@ const workspaceContent =
 
 let signInEvents = [];
 let roleAssignments = [];
-let cloudBasicsQuestions = [];
+
+let az900QuestionBank = [];
+let activeQuestions = [];
+
+/* =========================================================
+   STORAGE KEYS
+   ========================================================= */
+
+const AZ900_ANSWERS_KEY =
+  "csfl-cloud-answers";
+
+const AZ900_WEAK_AREAS_KEY =
+  "csfl-az900-weak-areas";
+
+const AZ900_LAST_MODE_KEY =
+  "csfl-az900-last-mode";
 
 /* =========================================================
    PROGRESS SYSTEM
@@ -47,7 +62,10 @@ const progressStorageKeys = [
   "csfl-lab03-started",
   "csfl-lab03-completed",
 
-  "csfl-cloud-answers",
+  AZ900_ANSWERS_KEY,
+  AZ900_WEAK_AREAS_KEY,
+  AZ900_LAST_MODE_KEY,
+
   "csfl-identity-decision",
   "csfl-zero-trust-decision"
 ];
@@ -192,8 +210,7 @@ function updateProgressUI() {
       progressElement.style.color =
         "var(--amber)";
     } else {
-      progressElement.style.color =
-        "";
+      progressElement.style.color = "";
     }
   }
 
@@ -373,7 +390,7 @@ function initializeProgressControls() {
 function resetAllProgress() {
   const confirmed =
     window.confirm(
-      "Reset all Cloud Security Lab progress?\n\nSaved answers and analyst decisions will be removed."
+      "Reset all Cloud Security Lab progress?\n\nSaved answers, weak areas and analyst decisions will be removed."
     );
 
   if (!confirmed) {
@@ -387,6 +404,8 @@ function resetAllProgress() {
       );
     }
   );
+
+  activeQuestions = [];
 
   workspaceTitle.textContent =
     "Select a Lab";
@@ -596,41 +615,43 @@ labButtons.forEach(
 );
 
 /* =========================================================
-   LAB 01 - AZ-900 QUESTION ENGINE
+   LAB 01 - AZ-900 HUB
    ========================================================= */
 
 async function renderCloudBasicsLab() {
   workspaceTitle.textContent =
-    "LAB 01 // AZ-900 Practice";
+    "LAB 01 // AZ-900 Training";
 
   workspaceStatus.textContent =
     "QUESTION BANK LOADING";
 
   workspaceContent.innerHTML = `
     <div class="loading-state">
+
       <span class="terminal-prompt">
         root@csfl:~$
       </span>
 
       loading data/questions/az900.json...
+
     </div>
   `;
 
   try {
-    cloudBasicsQuestions =
+    az900QuestionBank =
       await loadQuestionBank(
         "AZ-900"
       );
 
     if (
-      cloudBasicsQuestions.length === 0
+      az900QuestionBank.length === 0
     ) {
       throw new Error(
         "AZ-900 question bank is empty."
       );
     }
 
-    renderCloudQuestionWorkspace();
+    renderAz900TrainingHub();
   } catch (error) {
     workspaceStatus.textContent =
       "QUESTION BANK ERROR";
@@ -653,29 +674,34 @@ async function renderCloudBasicsLab() {
           data/questions/az900.json
         </p>
 
-        <p>
-          Make sure the website is running
-          through Live Server.
-        </p>
-
       </div>
     `;
   }
 }
 
-function renderCloudQuestionWorkspace() {
+/* =========================================================
+   AZ-900 TRAINING HUB
+   ========================================================= */
+
+function renderAz900TrainingHub() {
+  workspaceTitle.textContent =
+    "LAB 01 // AZ-900 Training";
+
   workspaceStatus.textContent =
-    "AZ-900 PRACTICE ACTIVE";
+    "SELECT TRAINING MODE";
+
+  activeQuestions = [];
 
   const domains =
-    [
-      ...new Set(
-        cloudBasicsQuestions.map(
-          (question) =>
-            question.domain
-        )
-      )
-    ];
+    getAz900Domains();
+
+  const weakAreas =
+    getWeakAreaIds();
+
+  const lastMode =
+    localStorage.getItem(
+      AZ900_LAST_MODE_KEY
+    ) || "NONE";
 
   workspaceContent.innerHTML = `
     <div class="investigation-layout">
@@ -686,7 +712,7 @@ function renderCloudQuestionWorkspace() {
 
           <div>
             <span class="case-id">
-              QUESTION BANK // AZ-900
+              TRAINING ENGINE // AZ-900
             </span>
 
             <h3>
@@ -695,16 +721,15 @@ function renderCloudQuestionWorkspace() {
           </div>
 
           <span class="severity-badge">
-            TRAINING
+            QUESTION BANK
           </span>
 
         </div>
 
         <p>
-          Questions are loaded dynamically from:
-          <strong>
-            data/questions/az900.json
-          </strong>
+          Select a training mode.
+          Questions are loaded dynamically from
+          the local AZ-900 question bank.
         </p>
 
         <div class="case-indicators">
@@ -729,7 +754,533 @@ function renderCloudQuestionWorkspace() {
           <span>QUESTION BANK</span>
 
           <strong>
-            ${cloudBasicsQuestions.length}
+            ${az900QuestionBank.length}
+          </strong>
+        </div>
+
+        <div>
+          <span>DOMAINS</span>
+
+          <strong>
+            ${domains.length}
+          </strong>
+        </div>
+
+        <div>
+          <span>WEAK AREAS</span>
+
+          <strong>
+            ${weakAreas.length}
+          </strong>
+        </div>
+
+        <div>
+          <span>LAST MODE</span>
+
+          <strong>
+            ${escapeHtml(lastMode)}
+          </strong>
+        </div>
+
+      </section>
+
+      <section class="event-console">
+
+        <div class="console-header">
+
+          <div>
+            <span class="terminal-prompt">
+              root@csfl:~$
+            </span>
+
+            select training-mode
+          </div>
+
+        </div>
+
+        <div class="workspace-content">
+
+          <h3>
+            Quick Practice
+          </h3>
+
+          <p>
+            Up to 10 random questions
+            from the full AZ-900 bank.
+          </p>
+
+          <div class="decision-actions">
+            <button id="startQuickPracticeBtn">
+              Start 10 Questions
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+      <section class="event-console">
+
+        <div class="console-header">
+
+          <div>
+            <span class="terminal-prompt">
+              root@csfl:~$
+            </span>
+
+            study-session
+          </div>
+
+        </div>
+
+        <div class="workspace-content">
+
+          <h3>
+            Study Session
+          </h3>
+
+          <p>
+            Up to 20 random questions
+            for a longer learning block.
+          </p>
+
+          <div class="decision-actions">
+            <button id="startStudySessionBtn">
+              Start 20 Questions
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+      <section class="event-console">
+
+        <div class="console-header">
+
+          <div>
+            <span class="terminal-prompt">
+              root@csfl:~$
+            </span>
+
+            full-block
+          </div>
+
+        </div>
+
+        <div class="workspace-content">
+
+          <h3>
+            Full Block
+          </h3>
+
+          <p>
+            Up to 50 random questions.
+            This will become the main exam-style
+            training mode once the bank contains
+            50+ questions.
+          </p>
+
+          <div class="decision-actions">
+            <button id="startFullBlockBtn">
+              Start 50 Questions
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+      <section class="event-console">
+
+        <div class="console-header">
+
+          <div>
+            <span class="terminal-prompt">
+              root@csfl:~$
+            </span>
+
+            domain-practice
+          </div>
+
+          <select id="domainPracticeSelect">
+
+            ${domains
+              .map(
+                (domain) => `
+                  <option value="${escapeHtml(domain)}">
+                    ${escapeHtml(domain)}
+                  </option>
+                `
+              )
+              .join("")}
+
+          </select>
+
+        </div>
+
+        <div class="workspace-content">
+
+          <h3>
+            Domain Practice
+          </h3>
+
+          <p>
+            Practice only questions from
+            one AZ-900 domain.
+          </p>
+
+          <div class="decision-actions">
+            <button id="startDomainPracticeBtn">
+              Start Domain
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+      <section class="event-console">
+
+        <div class="console-header">
+
+          <div>
+            <span class="terminal-prompt">
+              root@csfl:~$
+            </span>
+
+            weak-areas
+          </div>
+
+        </div>
+
+        <div class="workspace-content">
+
+          <h3>
+            Weak Areas
+          </h3>
+
+          <p>
+            Retry questions that you previously
+            answered incorrectly.
+          </p>
+
+          <p>
+            Current weak-area questions:
+            <strong>
+              ${weakAreas.length}
+            </strong>
+          </p>
+
+          <div class="decision-actions">
+            <button id="startWeakAreasBtn">
+              Retry Weak Areas
+            </button>
+
+            <button id="clearWeakAreasBtn">
+              Clear Weak Areas
+            </button>
+          </div>
+
+        </div>
+
+      </section>
+
+    </div>
+  `;
+
+  document
+    .getElementById(
+      "startQuickPracticeBtn"
+    )
+    .addEventListener(
+      "click",
+      () => {
+        startAz900Practice(
+          "QUICK",
+          10
+        );
+      }
+    );
+
+  document
+    .getElementById(
+      "startStudySessionBtn"
+    )
+    .addEventListener(
+      "click",
+      () => {
+        startAz900Practice(
+          "STUDY",
+          20
+        );
+      }
+    );
+
+  document
+    .getElementById(
+      "startFullBlockBtn"
+    )
+    .addEventListener(
+      "click",
+      () => {
+        startAz900Practice(
+          "FULL",
+          50
+        );
+      }
+    );
+
+  document
+    .getElementById(
+      "startDomainPracticeBtn"
+    )
+    .addEventListener(
+      "click",
+      startDomainPractice
+    );
+
+  document
+    .getElementById(
+      "startWeakAreasBtn"
+    )
+    .addEventListener(
+      "click",
+      startWeakAreaPractice
+    );
+
+  document
+    .getElementById(
+      "clearWeakAreasBtn"
+    )
+    .addEventListener(
+      "click",
+      clearWeakAreas
+    );
+}
+
+/* =========================================================
+   AZ-900 MODES
+   ========================================================= */
+
+function startAz900Practice(
+  mode,
+  requestedCount
+) {
+  localStorage.removeItem(
+    AZ900_ANSWERS_KEY
+  );
+
+  localStorage.setItem(
+    AZ900_LAST_MODE_KEY,
+    mode
+  );
+
+  const shuffled =
+    shuffleArray(
+      az900QuestionBank
+    );
+
+  const actualCount =
+    Math.min(
+      requestedCount,
+      shuffled.length
+    );
+
+  activeQuestions =
+    shuffled.slice(
+      0,
+      actualCount
+    );
+
+  renderAz900PracticeSession(
+    mode,
+    requestedCount
+  );
+}
+
+function startDomainPractice() {
+  const select =
+    document.getElementById(
+      "domainPracticeSelect"
+    );
+
+  const selectedDomain =
+    select.value;
+
+  const domainQuestions =
+    az900QuestionBank.filter(
+      (question) =>
+        question.domain ===
+        selectedDomain
+    );
+
+  if (
+    domainQuestions.length === 0
+  ) {
+    showSystemToast(
+      "DOMAIN // NO QUESTIONS FOUND",
+      "warning"
+    );
+
+    return;
+  }
+
+  localStorage.removeItem(
+    AZ900_ANSWERS_KEY
+  );
+
+  localStorage.setItem(
+    AZ900_LAST_MODE_KEY,
+    "DOMAIN"
+  );
+
+  activeQuestions =
+    shuffleArray(
+      domainQuestions
+    );
+
+  renderAz900PracticeSession(
+    `DOMAIN // ${selectedDomain}`,
+    activeQuestions.length
+  );
+}
+
+function startWeakAreaPractice() {
+  const weakIds =
+    getWeakAreaIds();
+
+  if (
+    weakIds.length === 0
+  ) {
+    showSystemToast(
+      "WEAK AREAS // NONE RECORDED",
+      "warning"
+    );
+
+    return;
+  }
+
+  const weakQuestions =
+    az900QuestionBank.filter(
+      (question) =>
+        weakIds.includes(
+          question.id
+        )
+    );
+
+  if (
+    weakQuestions.length === 0
+  ) {
+    showSystemToast(
+      "WEAK AREAS // QUESTIONS NOT FOUND",
+      "warning"
+    );
+
+    return;
+  }
+
+  localStorage.removeItem(
+    AZ900_ANSWERS_KEY
+  );
+
+  localStorage.setItem(
+    AZ900_LAST_MODE_KEY,
+    "WEAK AREAS"
+  );
+
+  activeQuestions =
+    shuffleArray(
+      weakQuestions
+    );
+
+  renderAz900PracticeSession(
+    "WEAK AREAS",
+    activeQuestions.length
+  );
+}
+
+function clearWeakAreas() {
+  localStorage.removeItem(
+    AZ900_WEAK_AREAS_KEY
+  );
+
+  showSystemToast(
+    "WEAK AREAS // CLEARED",
+    "warning"
+  );
+
+  renderAz900TrainingHub();
+}
+
+/* =========================================================
+   AZ-900 PRACTICE SESSION
+   ========================================================= */
+
+function renderAz900PracticeSession(
+  mode,
+  requestedCount
+) {
+  workspaceTitle.textContent =
+    `LAB 01 // ${mode}`;
+
+  workspaceStatus.textContent =
+    "TRAINING ACTIVE";
+
+  const availableNotice =
+    activeQuestions.length <
+    requestedCount
+      ? `${activeQuestions.length} available / ${requestedCount} requested`
+      : `${activeQuestions.length} questions`;
+
+  workspaceContent.innerHTML = `
+    <div class="investigation-layout">
+
+      <section class="case-panel">
+
+        <div class="case-header">
+
+          <div>
+
+            <span class="case-id">
+              AZ-900 // ${escapeHtml(mode)}
+            </span>
+
+            <h3>
+              Azure Fundamentals Training Session
+            </h3>
+
+          </div>
+
+          <span class="severity-badge">
+            ${escapeHtml(
+              availableNotice.toUpperCase()
+            )}
+          </span>
+
+        </div>
+
+        <p>
+          Complete the session and submit
+          your answers for scoring.
+        </p>
+
+        <p>
+          Local training pass threshold:
+          <strong>80%</strong>.
+          This is a project training threshold,
+          not Microsoft's exam scoring formula.
+        </p>
+
+      </section>
+
+      <section class="investigation-stats">
+
+        <div>
+          <span>SESSION QUESTIONS</span>
+
+          <strong>
+            ${activeQuestions.length}
           </strong>
         </div>
 
@@ -759,36 +1310,14 @@ function renderCloudQuestionWorkspace() {
 
       </section>
 
-      <section class="mission-box">
-
-        <span class="mission-label">
-          MISSION
-        </span>
-
-        <h3>
-          Complete the current AZ-900 question bank.
-        </h3>
-
-        <p>
-          The question engine automatically adapts
-          when more questions are added to az900.json.
-        </p>
-
-      </section>
-
       <div id="cloudQuestionContainer">
       </div>
 
       <section class="decision-panel">
 
         <span class="panel-label">
-          QUESTION ENGINE
+          SESSION CONTROL
         </span>
-
-        <p>
-          Answer the questions and submit the
-          complete training block.
-        </p>
 
         <div class="decision-actions">
 
@@ -796,8 +1325,12 @@ function renderCloudQuestionWorkspace() {
             Check Answers
           </button>
 
-          <button id="resetCloudAnswersBtn">
-            Reset Answers
+          <button id="restartSessionBtn">
+            Restart Session
+          </button>
+
+          <button id="backToModesBtn">
+            Training Modes
           </button>
 
         </div>
@@ -810,9 +1343,7 @@ function renderCloudQuestionWorkspace() {
     </div>
   `;
 
-  renderCloudQuestions();
-
-  loadSavedCloudAnswers();
+  renderActiveQuestions();
 
   document
     .getElementById(
@@ -820,27 +1351,36 @@ function renderCloudQuestionWorkspace() {
     )
     .addEventListener(
       "click",
-      checkCloudBasicsAnswers
+      checkAz900Answers
     );
 
   document
     .getElementById(
-      "resetCloudAnswersBtn"
+      "restartSessionBtn"
     )
     .addEventListener(
       "click",
-      resetCloudBasicsChallenge
+      restartCurrentAz900Session
+    );
+
+  document
+    .getElementById(
+      "backToModesBtn"
+    )
+    .addEventListener(
+      "click",
+      renderAz900TrainingHub
     );
 }
 
-function renderCloudQuestions() {
+function renderActiveQuestions() {
   const container =
     document.getElementById(
       "cloudQuestionContainer"
     );
 
   container.innerHTML =
-    cloudBasicsQuestions
+    activeQuestions
       .map(
         (question, index) => {
           const options =
@@ -876,18 +1416,18 @@ function renderCloudQuestions() {
                     question.topic
                   )}
 
-                  <span>
-                    [
-                    ${escapeHtml(
-                      question.difficulty.toUpperCase()
-                    )}
-                    ]
-                  </span>
+                  [
+                  ${escapeHtml(
+                    question.difficulty.toUpperCase()
+                  )}
+                  ]
 
                 </div>
 
                 <select
-                  id="${escapeHtml(question.id)}"
+                  id="${escapeHtml(
+                    question.id
+                  )}"
                   class="cloud-answer"
                 >
 
@@ -939,18 +1479,22 @@ function renderCloudQuestions() {
       (select) => {
         select.addEventListener(
           "change",
-          handleCloudAnswerChange
+          handleAz900AnswerChange
         );
       }
     );
 }
 
-function handleCloudAnswerChange() {
-  updateCloudAnsweredCount();
-  saveCloudAnswers();
+/* =========================================================
+   AZ-900 ANSWERS
+   ========================================================= */
+
+function handleAz900AnswerChange() {
+  updateAz900AnsweredCount();
+  saveAz900SessionAnswers();
 }
 
-function updateCloudAnsweredCount() {
+function updateAz900AnsweredCount() {
   const selects = [
     ...document.querySelectorAll(
       ".cloud-answer"
@@ -974,10 +1518,10 @@ function updateCloudAnsweredCount() {
   }
 }
 
-function saveCloudAnswers() {
+function saveAz900SessionAnswers() {
   const answers = {};
 
-  cloudBasicsQuestions.forEach(
+  activeQuestions.forEach(
     (question) => {
       const select =
         document.getElementById(
@@ -993,18 +1537,23 @@ function saveCloudAnswers() {
   );
 
   localStorage.setItem(
-    "csfl-cloud-answers",
+    AZ900_ANSWERS_KEY,
     JSON.stringify(
       answers
     )
   );
 }
 
-function checkCloudBasicsAnswers() {
+function checkAz900Answers() {
   let correct = 0;
   let answered = 0;
 
-  cloudBasicsQuestions.forEach(
+  const weakAreas =
+    new Set(
+      getWeakAreaIds()
+    );
+
+  activeQuestions.forEach(
     (question) => {
       const select =
         document.getElementById(
@@ -1031,6 +1580,10 @@ function checkCloudBasicsAnswers() {
       ) {
         correct++;
 
+        weakAreas.delete(
+          question.id
+        );
+
         feedback.innerHTML = `
           <span class="event-success">
             CORRECT
@@ -1052,10 +1605,14 @@ function checkCloudBasicsAnswers() {
 
           <p>
             Select an answer before
-            submitting the block.
+            submitting the session.
           </p>
         `;
       } else {
+        weakAreas.add(
+          question.id
+        );
+
         feedback.innerHTML = `
           <span class="event-failed">
             INCORRECT
@@ -1084,13 +1641,17 @@ function checkCloudBasicsAnswers() {
     }
   );
 
-  saveCloudAnswers();
+  saveAz900SessionAnswers();
+
+  saveWeakAreaIds(
+    [...weakAreas]
+  );
 
   const score =
     Math.round(
       (
         correct /
-        cloudBasicsQuestions.length
+        activeQuestions.length
       ) * 100
     );
 
@@ -1115,11 +1676,23 @@ function checkCloudBasicsAnswers() {
     );
 
   if (
-    correct ===
-    cloudBasicsQuestions.length
+    answered <
+    activeQuestions.length
   ) {
     status.textContent =
-      `COMPLETE // ${correct}/${cloudBasicsQuestions.length} correct. AZ-900 block passed.`;
+      `INCOMPLETE // ${answered}/${activeQuestions.length} questions answered.`;
+
+    status.className =
+      "decision-error";
+
+    return;
+  }
+
+  if (
+    score >= 80
+  ) {
+    status.textContent =
+      `PASSED // ${correct}/${activeQuestions.length} correct (${score}%).`;
 
     status.className =
       "decision-success";
@@ -1127,73 +1700,93 @@ function checkCloudBasicsAnswers() {
     markLabCompleted(
       "lab01"
     );
-  } else if (
-    answered <
-    cloudBasicsQuestions.length
-  ) {
-    status.textContent =
-      `INCOMPLETE // ${answered}/${cloudBasicsQuestions.length} answered.`;
 
-    status.className =
-      "decision-error";
-  } else {
-    status.textContent =
-      `RESULT // ${correct}/${cloudBasicsQuestions.length} correct (${score}%). Review the explanations and retry.`;
-
-    status.className =
-      "decision-error";
+    return;
   }
+
+  status.textContent =
+    `REVIEW REQUIRED // ${correct}/${activeQuestions.length} correct (${score}%). Weak areas updated.`;
+
+  status.className =
+    "decision-error";
 }
 
-function resetCloudBasicsChallenge() {
+function restartCurrentAz900Session() {
   localStorage.removeItem(
-    "csfl-cloud-answers"
+    AZ900_ANSWERS_KEY
   );
 
-  renderCloudQuestionWorkspace();
+  activeQuestions =
+    shuffleArray(
+      activeQuestions
+    );
+
+  renderAz900PracticeSession(
+    localStorage.getItem(
+      AZ900_LAST_MODE_KEY
+    ) || "PRACTICE",
+    activeQuestions.length
+  );
 
   showSystemToast(
-    "AZ-900 // ANSWERS RESET",
+    "AZ-900 // SESSION RESTARTED",
     "warning"
   );
 }
 
-function loadSavedCloudAnswers() {
-  const saved =
+/* =========================================================
+   WEAK AREAS
+   ========================================================= */
+
+function getWeakAreaIds() {
+  const raw =
     localStorage.getItem(
-      "csfl-cloud-answers"
+      AZ900_WEAK_AREAS_KEY
     );
 
-  if (!saved) {
-    return;
+  if (!raw) {
+    return [];
   }
 
   try {
-    const answers =
-      JSON.parse(saved);
+    const parsed =
+      JSON.parse(raw);
 
-    Object.entries(
-      answers
-    ).forEach(
-      ([id, value]) => {
-        const select =
-          document.getElementById(
-            id
-          );
-
-        if (select) {
-          select.value =
-            value;
-        }
-      }
-    );
-
-    updateCloudAnsweredCount();
+    return Array.isArray(parsed)
+      ? parsed
+      : [];
   } catch {
     localStorage.removeItem(
-      "csfl-cloud-answers"
+      AZ900_WEAK_AREAS_KEY
     );
+
+    return [];
   }
+}
+
+function saveWeakAreaIds(ids) {
+  const uniqueIds =
+    [...new Set(ids)];
+
+  localStorage.setItem(
+    AZ900_WEAK_AREAS_KEY,
+    JSON.stringify(
+      uniqueIds
+    )
+  );
+}
+
+function getAz900Domains() {
+  return [
+    ...new Set(
+      az900QuestionBank
+        .map(
+          (question) =>
+            question.domain
+        )
+        .filter(Boolean)
+    )
+  ];
 }
 
 /* =========================================================
@@ -1369,7 +1962,7 @@ function renderIdentityWorkspace(
               <tr>
                 <th>USER</th>
                 <th>JOB ROLE</th>
-                <th>AZURE ROLE</th>
+                <th>ASSIGNED ROLE</th>
                 <th>SCOPE</th>
                 <th>MFA</th>
                 <th>PRIVILEGED</th>
@@ -1757,23 +2350,6 @@ function renderIdentityTable(
         }
       )
       .join("");
-}
-
-function getRiskClass(level) {
-  if (
-    level === "high" ||
-    level === "critical"
-  ) {
-    return "risk-high";
-  }
-
-  if (
-    level === "medium"
-  ) {
-    return "risk-medium";
-  }
-
-  return "risk-low";
 }
 
 function saveIdentityDecision() {
@@ -2510,6 +3086,51 @@ function parseCsv(csvText) {
 /* =========================================================
    HELPERS
    ========================================================= */
+
+function shuffleArray(array) {
+  const copy =
+    [...array];
+
+  for (
+    let i =
+      copy.length - 1;
+    i > 0;
+    i--
+  ) {
+    const j =
+      Math.floor(
+        Math.random() *
+        (i + 1)
+      );
+
+    [
+      copy[i],
+      copy[j]
+    ] = [
+      copy[j],
+      copy[i]
+    ];
+  }
+
+  return copy;
+}
+
+function getRiskClass(level) {
+  if (
+    level === "high" ||
+    level === "critical"
+  ) {
+    return "risk-high";
+  }
+
+  if (
+    level === "medium"
+  ) {
+    return "risk-medium";
+  }
+
+  return "risk-low";
+}
 
 function formatTime(
   timestamp
