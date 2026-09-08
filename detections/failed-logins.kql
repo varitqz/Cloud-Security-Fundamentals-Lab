@@ -1,0 +1,17 @@
+// Detection: Failed Logins
+// Table: SigninLogs
+// Purpose:
+// Finds IP addresses with many failed sign-in attempts in the last hour.
+//
+// Security use cases:
+// - brute force attempts
+// - password spraying
+// - credential stuffing
+// - suspicious authentication activity
+
+SigninLogs
+| where TimeGenerated > ago(1h)
+| where ResultType != 0
+| summarize FailedAttempts = count() by IPAddress
+| where FailedAttempts > 20
+| order by FailedAttempts desc
