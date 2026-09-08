@@ -1,4 +1,5 @@
-const labButtons = document.querySelectorAll(".lab-button");
+const labButtons =
+  document.querySelectorAll(".lab-button");
 
 const workspaceTitle =
   document.getElementById("workspaceTitle");
@@ -23,6 +24,8 @@ let activeQuestions = [];
 
 let currentSessionLabel = "";
 let currentRequestedCount = 0;
+let currentSessionType = "practice";
+let currentSessionRecorded = false;
 
 /* =========================================================
    CERTIFICATION CONFIG
@@ -31,12 +34,8 @@ let currentRequestedCount = 0;
 const certificationConfig = {
   AZ900: {
     code: "AZ-900",
-
-    title:
-      "Azure Fundamentals",
-
-    path:
-      "data/questions/az900.json",
+    title: "Azure Fundamentals",
+    path: "data/questions/az900.json",
 
     answersKey:
       "csfl-az900-answers",
@@ -45,7 +44,10 @@ const certificationConfig = {
       "csfl-az900-weak-areas",
 
     lastModeKey:
-      "csfl-az900-last-mode"
+      "csfl-az900-last-mode",
+
+    historyKey:
+      "csfl-az900-history"
   },
 
   SC900: {
@@ -64,7 +66,10 @@ const certificationConfig = {
       "csfl-sc900-weak-areas",
 
     lastModeKey:
-      "csfl-sc900-last-mode"
+      "csfl-sc900-last-mode",
+
+    historyKey:
+      "csfl-sc900-history"
   }
 };
 
@@ -125,10 +130,12 @@ const progressStorageKeys = [
   "csfl-az900-answers",
   "csfl-az900-weak-areas",
   "csfl-az900-last-mode",
+  "csfl-az900-history",
 
   "csfl-sc900-answers",
   "csfl-sc900-weak-areas",
-  "csfl-sc900-last-mode"
+  "csfl-sc900-last-mode",
+  "csfl-sc900-history"
 ];
 
 function markLabStarted(labId) {
@@ -234,8 +241,7 @@ function updateProgressUI() {
       }
 
       if (
-        state ===
-        "COMPLETED"
+        state === "COMPLETED"
       ) {
         completedLabs++;
       }
@@ -353,12 +359,12 @@ function updateEnvironmentStatus(
     return;
   }
 
-  const statusTitle =
+  const title =
     statusCard.querySelector(
       "strong"
     );
 
-  const statusText =
+  const text =
     statusCard.querySelector(
       "p"
     );
@@ -367,30 +373,30 @@ function updateEnvironmentStatus(
     completedLabs ===
     totalLabs
   ) {
-    if (statusTitle) {
-      statusTitle.textContent =
+    if (title) {
+      title.textContent =
         "Training Complete";
     }
 
-    if (statusText) {
-      statusText.textContent =
+    if (text) {
+      text.textContent =
         "All local labs completed";
     }
   } else {
-    if (statusTitle) {
-      statusTitle.textContent =
+    if (title) {
+      title.textContent =
         "Local Lab Environment";
     }
 
-    if (statusText) {
-      statusText.textContent =
+    if (text) {
+      text.textContent =
         "Progress stored locally";
     }
   }
 }
 
 /* =========================================================
-   RESET PROGRESS
+   RESET
    ========================================================= */
 
 function initializeProgressControls() {
@@ -408,61 +414,61 @@ function initializeProgressControls() {
     return;
   }
 
-  const resetButton =
+  const button =
     document.createElement(
       "button"
     );
 
-  resetButton.id =
+  button.id =
     "resetProgressBtn";
 
-  resetButton.type =
+  button.type =
     "button";
 
-  resetButton.textContent =
+  button.textContent =
     "RESET";
 
-  resetButton.style.marginLeft =
+  button.style.marginLeft =
     "auto";
 
-  resetButton.style.padding =
+  button.style.padding =
     "7px 10px";
 
-  resetButton.style.border =
+  button.style.border =
     "1px solid rgba(255,95,104,.2)";
 
-  resetButton.style.background =
+  button.style.background =
     "rgba(255,95,104,.04)";
 
-  resetButton.style.color =
+  button.style.color =
     "#a9787b";
 
-  resetButton.style.fontFamily =
+  button.style.fontFamily =
     "inherit";
 
-  resetButton.style.fontSize =
+  button.style.fontSize =
     "8px";
 
-  resetButton.style.fontWeight =
+  button.style.fontWeight =
     "800";
 
-  resetButton.style.cursor =
+  button.style.cursor =
     "pointer";
 
-  resetButton.addEventListener(
+  button.addEventListener(
     "click",
     resetAllProgress
   );
 
   statusCard.appendChild(
-    resetButton
+    button
   );
 }
 
 function resetAllProgress() {
   const confirmed =
     window.confirm(
-      "Reset all Cloud Security Lab progress?\n\nSaved answers, weak areas and analyst decisions will be removed."
+      "Reset all Cloud Security Lab progress?\n\nSaved answers, history, weak areas and analyst decisions will be removed."
     );
 
   if (!confirmed) {
@@ -508,7 +514,7 @@ function resetAllProgress() {
 }
 
 /* =========================================================
-   SYSTEM TOAST
+   TOAST
    ========================================================= */
 
 function showSystemToast(
@@ -633,7 +639,7 @@ async function loadQuestionBank(
 }
 
 /* =========================================================
-   LAB SELECTION
+   LAB BUTTONS
    ========================================================= */
 
 labButtons.forEach(
@@ -691,7 +697,7 @@ labButtons.forEach(
 );
 
 /* =========================================================
-   LAB 01 - CERTIFICATION HUB
+   CERTIFICATION HUB
    ========================================================= */
 
 async function renderCertificationLab() {
@@ -703,13 +709,11 @@ async function renderCertificationLab() {
 
   workspaceContent.innerHTML = `
     <div class="loading-state">
-
       <span class="terminal-prompt">
         root@csfl:~$
       </span>
 
       loading AZ-900 + SC-900 question banks...
-
     </div>
   `;
 
@@ -752,11 +756,6 @@ async function renderCertificationLab() {
           )}
         </p>
 
-        <p>
-          Check data/questions/az900.json
-          and data/questions/sc900.json.
-        </p>
-
       </div>
     `;
   }
@@ -786,7 +785,6 @@ function renderCertificationHub() {
         <div class="case-header">
 
           <div>
-
             <span class="case-id">
               CERTIFICATION HUB // CSFL
             </span>
@@ -794,7 +792,6 @@ function renderCertificationHub() {
             <h3>
               Choose Your Training Path
             </h3>
-
           </div>
 
           <span class="severity-badge">
@@ -804,10 +801,9 @@ function renderCertificationHub() {
         </div>
 
         <p>
-          Both certifications use the same
-          adaptive training engine, but keep
-          separate answers, weak areas and
-          training state.
+          Adaptive certification training
+          with isolated weak areas,
+          session history and domain scores.
         </p>
 
         <div class="case-indicators">
@@ -815,6 +811,7 @@ function renderCertificationHub() {
           <span>AZ-900</span>
           <span>SC-900</span>
           <span>100 Questions</span>
+          <span>Exam Mode</span>
           <span>Adaptive Training</span>
 
         </div>
@@ -825,58 +822,36 @@ function renderCertificationHub() {
       <section class="investigation-stats">
 
         <div>
-          <span>
-            AZ-900 QUESTIONS
-          </span>
+          <span>AZ-900 QUESTIONS</span>
+
+          <strong>
+            ${certificationBanks.AZ900.length}
+          </strong>
+        </div>
+
+        <div>
+          <span>SC-900 QUESTIONS</span>
+
+          <strong>
+            ${certificationBanks.SC900.length}
+          </strong>
+        </div>
+
+        <div>
+          <span>TOTAL QUESTIONS</span>
 
           <strong>
             ${
-              certificationBanks
-                .AZ900
-                .length
+              certificationBanks.AZ900.length +
+              certificationBanks.SC900.length
             }
           </strong>
         </div>
 
         <div>
-          <span>
-            SC-900 QUESTIONS
-          </span>
+          <span>ENGINE</span>
 
-          <strong>
-            ${
-              certificationBanks
-                .SC900
-                .length
-            }
-          </strong>
-        </div>
-
-        <div>
-          <span>
-            TOTAL QUESTIONS
-          </span>
-
-          <strong>
-            ${
-              certificationBanks
-                .AZ900
-                .length +
-              certificationBanks
-                .SC900
-                .length
-            }
-          </strong>
-        </div>
-
-        <div>
-          <span>
-            TRAINING ENGINE
-          </span>
-
-          <strong>
-            ACTIVE
-          </strong>
+          <strong>ONLINE</strong>
         </div>
 
       </section>
@@ -885,7 +860,6 @@ function renderCertificationHub() {
       <section class="event-console">
 
         <div class="console-header">
-
           <div>
             <span class="terminal-prompt">
               root@csfl:~$
@@ -893,7 +867,6 @@ function renderCertificationHub() {
 
             select AZ-900
           </div>
-
         </div>
 
         <div class="workspace-content">
@@ -903,19 +876,8 @@ function renderCertificationHub() {
           </h3>
 
           <p>
-            Cloud concepts, Azure architecture
-            and services, management and governance.
-          </p>
-
-          <p>
-            <strong>
-              ${
-                certificationBanks
-                  .AZ900
-                  .length
-              }
-            </strong>
-            questions available.
+            Cloud concepts, Azure architecture,
+            services, management and governance.
           </p>
 
           <div class="decision-actions">
@@ -934,7 +896,6 @@ function renderCertificationHub() {
       <section class="event-console">
 
         <div class="console-header">
-
           <div>
             <span class="terminal-prompt">
               root@csfl:~$
@@ -942,31 +903,18 @@ function renderCertificationHub() {
 
             select SC-900
           </div>
-
         </div>
 
         <div class="workspace-content">
 
           <h3>
             SC-900 // Security,
-            Compliance & Identity Fundamentals
+            Compliance & Identity
           </h3>
 
           <p>
-            Zero Trust, Microsoft Entra,
-            Defender, Sentinel,
-            Microsoft Purview and compliance.
-          </p>
-
-          <p>
-            <strong>
-              ${
-                certificationBanks
-                  .SC900
-                  .length
-              }
-            </strong>
-            questions available.
+            Zero Trust, Entra, Defender,
+            Sentinel, Purview and compliance.
           </p>
 
           <div class="decision-actions">
@@ -1012,7 +960,7 @@ function renderCertificationHub() {
 }
 
 /* =========================================================
-   CERTIFICATION TRAINING HUB
+   TRAINING HUB
    ========================================================= */
 
 function openCertificationTraining(
@@ -1054,9 +1002,7 @@ function openCertificationTraining(
 }
 
 function renderTrainingModeHub() {
-  if (
-    !activeCertification
-  ) {
+  if (!activeCertification) {
     renderCertificationHub();
 
     return;
@@ -1072,6 +1018,14 @@ function renderTrainingModeHub() {
 
   const weakAreas =
     getWeakAreaIds();
+
+  const history =
+    getSessionHistory();
+
+  const domainPerformance =
+    calculateHistoricalDomainPerformance(
+      history
+    );
 
   const lastMode =
     localStorage.getItem(
@@ -1092,20 +1046,14 @@ function renderTrainingModeHub() {
         <div class="case-header">
 
           <div>
-
             <span class="case-id">
               TRAINING ENGINE //
-              ${escapeHtml(
-                config.code
-              )}
+              ${escapeHtml(config.code)}
             </span>
 
             <h3>
-              ${escapeHtml(
-                config.title
-              )}
+              ${escapeHtml(config.title)}
             </h3>
-
           </div>
 
           <span class="severity-badge">
@@ -1115,12 +1063,9 @@ function renderTrainingModeHub() {
         </div>
 
         <p>
-          Select a training mode.
-          Weak areas and saved state are
-          isolated for
-          ${escapeHtml(
-            config.code
-          )}.
+          Practice, review weak areas,
+          run exam simulations and track
+          performance over time.
         </p>
 
         <div class="case-indicators">
@@ -1129,9 +1074,7 @@ function renderTrainingModeHub() {
             .map(
               (domain) => `
                 <span>
-                  ${escapeHtml(
-                    domain
-                  )}
+                  ${escapeHtml(domain)}
                 </span>
               `
             )
@@ -1145,62 +1088,30 @@ function renderTrainingModeHub() {
       <section class="investigation-stats">
 
         <div>
-
-          <span>
-            QUESTION BANK
-          </span>
-
-          <strong>
-            ${activeQuestionBank.length}
-          </strong>
-
+          <span>QUESTION BANK</span>
+          <strong>${activeQuestionBank.length}</strong>
         </div>
 
         <div>
-
-          <span>
-            DOMAINS
-          </span>
-
-          <strong>
-            ${domains.length}
-          </strong>
-
+          <span>WEAK AREAS</span>
+          <strong>${weakAreas.length}</strong>
         </div>
 
         <div>
-
-          <span>
-            WEAK AREAS
-          </span>
-
-          <strong>
-            ${weakAreas.length}
-          </strong>
-
+          <span>SESSIONS</span>
+          <strong>${history.length}</strong>
         </div>
 
         <div>
-
-          <span>
-            LAST MODE
-          </span>
-
-          <strong>
-            ${escapeHtml(
-              lastMode
-            )}
-          </strong>
-
+          <span>LAST MODE</span>
+          <strong>${escapeHtml(lastMode)}</strong>
         </div>
 
       </section>
 
 
       <section class="event-console">
-
         <div class="console-header">
-
           <div>
             <span class="terminal-prompt">
               root@csfl:~$
@@ -1208,93 +1119,89 @@ function renderTrainingModeHub() {
 
             quick-practice
           </div>
-
         </div>
 
         <div class="workspace-content">
-
-          <h3>
-            Quick Practice
-          </h3>
+          <h3>Quick Practice</h3>
 
           <p>
-            10 random questions from
-            the full
-            ${escapeHtml(
-              config.code
-            )}
-            bank.
+            10 random questions.
           </p>
 
           <div class="decision-actions">
-
-            <button
-              id="startQuickPracticeBtn"
-            >
+            <button id="startQuickPracticeBtn">
               Start 10 Questions
             </button>
-
           </div>
-
         </div>
-
       </section>
 
 
       <section class="event-console">
-
         <div class="console-header">
-
           <div>
-
             <span class="terminal-prompt">
               root@csfl:~$
             </span>
 
             study-session
-
           </div>
-
         </div>
 
         <div class="workspace-content">
-
-          <h3>
-            Study Session
-          </h3>
+          <h3>Study Session</h3>
 
           <p>
-            20 random questions for
-            a longer learning block.
+            20 random questions.
           </p>
 
           <div class="decision-actions">
-
-            <button
-              id="startStudySessionBtn"
-            >
+            <button id="startStudySessionBtn">
               Start 20 Questions
             </button>
-
           </div>
-
         </div>
-
       </section>
 
 
       <section class="event-console">
-
         <div class="console-header">
-
           <div>
-
             <span class="terminal-prompt">
               root@csfl:~$
             </span>
 
             full-block
+          </div>
+        </div>
 
+        <div class="workspace-content">
+          <h3>Full Block</h3>
+
+          <p>
+            Complete 50-question
+            training session.
+          </p>
+
+          <div class="decision-actions">
+            <button id="startFullBlockBtn">
+              Start 50 Questions
+            </button>
+          </div>
+        </div>
+      </section>
+
+
+      <section class="event-console">
+
+        <div class="console-header">
+
+          <div>
+            <span class="terminal-prompt">
+              root@csfl:~$
+            </span>
+
+            exam-mode
           </div>
 
         </div>
@@ -1302,20 +1209,19 @@ function renderTrainingModeHub() {
         <div class="workspace-content">
 
           <h3>
-            Full Block
+            Exam Mode
           </h3>
 
           <p>
-            50 questions for a
-            complete training block.
+            50 randomized questions.
+            Answers and explanations remain
+            hidden until the exam is submitted.
           </p>
 
           <div class="decision-actions">
 
-            <button
-              id="startFullBlockBtn"
-            >
-              Start 50 Questions
+            <button id="startExamModeBtn">
+              Start Exam Simulation
             </button>
 
           </div>
@@ -1330,13 +1236,11 @@ function renderTrainingModeHub() {
         <div class="console-header">
 
           <div>
-
             <span class="terminal-prompt">
               root@csfl:~$
             </span>
 
             domain-practice
-
           </div>
 
           <select
@@ -1347,13 +1251,9 @@ function renderTrainingModeHub() {
               .map(
                 (domain) => `
                   <option
-                    value="${escapeHtml(
-                      domain
-                    )}"
+                    value="${escapeHtml(domain)}"
                   >
-                    ${escapeHtml(
-                      domain
-                    )}
+                    ${escapeHtml(domain)}
                   </option>
                 `
               )
@@ -1370,15 +1270,13 @@ function renderTrainingModeHub() {
           </h3>
 
           <p>
-            Practice one certification
+            Train one certification
             domain at a time.
           </p>
 
           <div class="decision-actions">
 
-            <button
-              id="startDomainPracticeBtn"
-            >
+            <button id="startDomainPracticeBtn">
               Start Domain
             </button>
 
@@ -1394,13 +1292,11 @@ function renderTrainingModeHub() {
         <div class="console-header">
 
           <div>
-
             <span class="terminal-prompt">
               root@csfl:~$
             </span>
 
             weak-areas
-
           </div>
 
         </div>
@@ -1412,32 +1308,108 @@ function renderTrainingModeHub() {
           </h3>
 
           <p>
-            Retry questions that were
-            previously answered incorrectly.
+            Retry previously incorrect questions.
           </p>
 
           <p>
             Current weak-area questions:
-            <strong>
-              ${weakAreas.length}
-            </strong>
+            <strong>${weakAreas.length}</strong>
           </p>
 
           <div class="decision-actions">
 
-            <button
-              id="startWeakAreasBtn"
-            >
+            <button id="startWeakAreasBtn">
               Retry Weak Areas
             </button>
 
-            <button
-              id="clearWeakAreasBtn"
-            >
+            <button id="clearWeakAreasBtn">
               Clear Weak Areas
             </button>
 
           </div>
+
+        </div>
+
+      </section>
+
+
+      <section class="event-console">
+
+        <div class="console-header">
+
+          <div>
+            <span class="terminal-prompt">
+              root@csfl:~$
+            </span>
+
+            domain-performance
+          </div>
+
+        </div>
+
+        <div class="table-wrapper">
+
+          <table class="event-table">
+
+            <thead>
+              <tr>
+                <th>DOMAIN</th>
+                <th>CORRECT</th>
+                <th>ANSWERED</th>
+                <th>SCORE</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              ${
+                renderHistoricalDomainRows(
+                  domainPerformance
+                )
+              }
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </section>
+
+
+      <section class="event-console">
+
+        <div class="console-header">
+
+          <div>
+            <span class="terminal-prompt">
+              root@csfl:~$
+            </span>
+
+            session-history
+          </div>
+
+        </div>
+
+        <div class="table-wrapper">
+
+          <table class="event-table">
+
+            <thead>
+              <tr>
+                <th>DATE</th>
+                <th>MODE</th>
+                <th>RESULT</th>
+                <th>SCORE</th>
+                <th>CORRECT</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              ${renderHistoryRows(
+                history
+              )}
+            </tbody>
+
+          </table>
 
         </div>
 
@@ -1509,6 +1481,15 @@ function renderTrainingModeHub() {
 
   document
     .getElementById(
+      "startExamModeBtn"
+    )
+    .addEventListener(
+      "click",
+      startExamMode
+    );
+
+  document
+    .getElementById(
       "startDomainPracticeBtn"
     )
     .addEventListener(
@@ -1545,7 +1526,7 @@ function renderTrainingModeHub() {
 }
 
 /* =========================================================
-   PRACTICE MODES
+   SESSION START
    ========================================================= */
 
 function startPractice(
@@ -1553,9 +1534,7 @@ function startPractice(
   requestedCount
 ) {
   const config =
-    certificationConfig[
-      activeCertification
-    ];
+    getActiveConfig();
 
   localStorage.removeItem(
     config.answersKey
@@ -1566,21 +1545,15 @@ function startPractice(
     mode
   );
 
-  const shuffled =
+  activeQuestions =
     shuffleArray(
       activeQuestionBank
-    );
-
-  const actualCount =
-    Math.min(
-      requestedCount,
-      shuffled.length
-    );
-
-  activeQuestions =
-    shuffled.slice(
+    ).slice(
       0,
-      actualCount
+      Math.min(
+        requestedCount,
+        activeQuestionBank.length
+      )
     );
 
   currentSessionLabel =
@@ -1589,29 +1562,72 @@ function startPractice(
   currentRequestedCount =
     requestedCount;
 
+  currentSessionType =
+    "practice";
+
+  currentSessionRecorded =
+    false;
+
+  renderPracticeSession();
+}
+
+function startExamMode() {
+  const config =
+    getActiveConfig();
+
+  localStorage.removeItem(
+    config.answersKey
+  );
+
+  localStorage.setItem(
+    config.lastModeKey,
+    "EXAM"
+  );
+
+  activeQuestions =
+    shuffleArray(
+      activeQuestionBank
+    ).slice(
+      0,
+      Math.min(
+        50,
+        activeQuestionBank.length
+      )
+    );
+
+  currentSessionLabel =
+    "EXAM";
+
+  currentRequestedCount =
+    50;
+
+  currentSessionType =
+    "exam";
+
+  currentSessionRecorded =
+    false;
+
   renderPracticeSession();
 }
 
 function startDomainPractice() {
   const config =
-    certificationConfig[
-      activeCertification
-    ];
+    getActiveConfig();
 
-  const selectedDomain =
+  const domain =
     document.getElementById(
       "domainPracticeSelect"
     ).value;
 
-  const domainQuestions =
+  const questions =
     activeQuestionBank.filter(
       (question) =>
         question.domain ===
-        selectedDomain
+        domain
     );
 
   if (
-    domainQuestions.length === 0
+    questions.length === 0
   ) {
     showSystemToast(
       "DOMAIN // NO QUESTIONS FOUND",
@@ -1632,23 +1648,27 @@ function startDomainPractice() {
 
   activeQuestions =
     shuffleArray(
-      domainQuestions
+      questions
     );
 
   currentSessionLabel =
-    `DOMAIN // ${selectedDomain}`;
+    `DOMAIN // ${domain}`;
 
   currentRequestedCount =
     activeQuestions.length;
+
+  currentSessionType =
+    "practice";
+
+  currentSessionRecorded =
+    false;
 
   renderPracticeSession();
 }
 
 function startWeakAreaPractice() {
   const config =
-    certificationConfig[
-      activeCertification
-    ];
+    getActiveConfig();
 
   const weakIds =
     getWeakAreaIds();
@@ -1664,16 +1684,18 @@ function startWeakAreaPractice() {
     return;
   }
 
-  const weakQuestions =
-    activeQuestionBank.filter(
-      (question) =>
-        weakIds.includes(
-          question.id
-        )
+  activeQuestions =
+    shuffleArray(
+      activeQuestionBank.filter(
+        (question) =>
+          weakIds.includes(
+            question.id
+          )
+      )
     );
 
   if (
-    weakQuestions.length === 0
+    activeQuestions.length === 0
   ) {
     showSystemToast(
       "WEAK AREAS // QUESTIONS NOT FOUND",
@@ -1692,25 +1714,24 @@ function startWeakAreaPractice() {
     "WEAK AREAS"
   );
 
-  activeQuestions =
-    shuffleArray(
-      weakQuestions
-    );
-
   currentSessionLabel =
     "WEAK AREAS";
 
   currentRequestedCount =
     activeQuestions.length;
 
+  currentSessionType =
+    "practice";
+
+  currentSessionRecorded =
+    false;
+
   renderPracticeSession();
 }
 
 function clearWeakAreas() {
   const config =
-    certificationConfig[
-      activeCertification
-    ];
+    getActiveConfig();
 
   localStorage.removeItem(
     config.weakAreasKey
@@ -1725,16 +1746,18 @@ function clearWeakAreas() {
 }
 
 /* =========================================================
-   PRACTICE SESSION
+   PRACTICE / EXAM SESSION
    ========================================================= */
 
 function renderPracticeSession() {
   const config =
-    certificationConfig[
-      activeCertification
-    ];
+    getActiveConfig();
 
-  const availableNotice =
+  const isExam =
+    currentSessionType ===
+    "exam";
+
+  const notice =
     activeQuestions.length <
     currentRequestedCount
       ? `${activeQuestions.length} available / ${currentRequestedCount} requested`
@@ -1744,7 +1767,9 @@ function renderPracticeSession() {
     `LAB 01 // ${config.code} // ${currentSessionLabel}`;
 
   workspaceStatus.textContent =
-    "TRAINING ACTIVE";
+    isExam
+      ? "EXAM ACTIVE"
+      : "TRAINING ACTIVE";
 
   workspaceContent.innerHTML = `
     <div class="investigation-layout">
@@ -1756,42 +1781,45 @@ function renderPracticeSession() {
           <div>
 
             <span class="case-id">
-              ${escapeHtml(
-                config.code
-              )}
+              ${escapeHtml(config.code)}
               //
-              ${escapeHtml(
-                currentSessionLabel
-              )}
+              ${escapeHtml(currentSessionLabel)}
             </span>
 
             <h3>
-              ${escapeHtml(
-                config.title
-              )}
-              Training Session
+              ${escapeHtml(config.title)}
             </h3>
 
           </div>
 
           <span class="severity-badge">
             ${escapeHtml(
-              availableNotice.toUpperCase()
+              notice.toUpperCase()
             )}
           </span>
 
         </div>
 
-        <p>
-          Complete the session and
-          submit your answers for scoring.
-        </p>
+        ${
+          isExam
+            ? `
+              <p>
+                Exam simulation active.
+                Answers and explanations remain
+                hidden until submission.
+              </p>
+            `
+            : `
+              <p>
+                Complete the training session
+                and submit your answers.
+              </p>
+            `
+        }
 
         <p>
-          Local training pass threshold:
+          Local project pass threshold:
           <strong>80%</strong>.
-          This is a project threshold,
-          not Microsoft's exam scoring formula.
         </p>
 
       </section>
@@ -1800,51 +1828,23 @@ function renderPracticeSession() {
       <section class="investigation-stats">
 
         <div>
-
-          <span>
-            SESSION QUESTIONS
-          </span>
-
-          <strong>
-            ${activeQuestions.length}
-          </strong>
-
+          <span>QUESTIONS</span>
+          <strong>${activeQuestions.length}</strong>
         </div>
 
         <div>
-
-          <span>
-            ANSWERED
-          </span>
-
-          <strong id="cloudAnsweredCount">
-            0
-          </strong>
-
+          <span>ANSWERED</span>
+          <strong id="cloudAnsweredCount">0</strong>
         </div>
 
         <div>
-
-          <span>
-            CORRECT
-          </span>
-
-          <strong id="cloudCorrectCount">
-            0
-          </strong>
-
+          <span>CORRECT</span>
+          <strong id="cloudCorrectCount">—</strong>
         </div>
 
         <div>
-
-          <span>
-            SCORE
-          </span>
-
-          <strong id="cloudScore">
-            0%
-          </strong>
-
+          <span>SCORE</span>
+          <strong id="cloudScore">—</strong>
         </div>
 
       </section>
@@ -1852,14 +1852,17 @@ function renderPracticeSession() {
 
       <div
         id="cloudQuestionContainer"
-      >
-      </div>
+      ></div>
 
 
       <section class="decision-panel">
 
         <span class="panel-label">
-          SESSION CONTROL
+          ${
+            isExam
+              ? "EXAM CONTROL"
+              : "SESSION CONTROL"
+          }
         </span>
 
         <div class="decision-actions">
@@ -1867,7 +1870,11 @@ function renderPracticeSession() {
           <button
             id="checkCloudAnswersBtn"
           >
-            Check Answers
+            ${
+              isExam
+                ? "Submit Exam"
+                : "Check Answers"
+            }
           </button>
 
           <button
@@ -1882,18 +1889,11 @@ function renderPracticeSession() {
             Training Modes
           </button>
 
-          <button
-            id="backToCertificationHubBtn"
-          >
-            Certification Hub
-          </button>
-
         </div>
 
         <div
           id="cloudChallengeStatus"
-        >
-        </div>
+        ></div>
 
       </section>
 
@@ -1930,15 +1930,6 @@ function renderPracticeSession() {
       "click",
       renderTrainingModeHub
     );
-
-  document
-    .getElementById(
-      "backToCertificationHubBtn"
-    )
-    .addEventListener(
-      "click",
-      renderCertificationHub
-    );
 }
 
 function renderActiveQuestions() {
@@ -1959,13 +1950,9 @@ function renderActiveQuestions() {
               .map(
                 (option) => `
                   <option
-                    value="${escapeHtml(
-                      option
-                    )}"
+                    value="${escapeHtml(option)}"
                   >
-                    ${escapeHtml(
-                      option
-                    )}
+                    ${escapeHtml(option)}
                   </option>
                 `
               )
@@ -2020,7 +2007,6 @@ function renderActiveQuestions() {
 
               </div>
 
-
               <div class="workspace-content">
 
                 <p>
@@ -2037,14 +2023,12 @@ function renderActiveQuestions() {
 
               </div>
 
-
               <div
                 id="${escapeHtml(
                   question.id
                 )}-feedback"
                 class="task-item hidden"
-              >
-              </div>
+              ></div>
 
             </section>
           `;
@@ -2067,7 +2051,7 @@ function renderActiveQuestions() {
 }
 
 /* =========================================================
-   QUESTION ANSWERS
+   ANSWERS
    ========================================================= */
 
 function handleAnswerChange() {
@@ -2077,14 +2061,12 @@ function handleAnswerChange() {
 }
 
 function updateAnsweredCount() {
-  const selects = [
-    ...document.querySelectorAll(
-      ".cloud-answer"
-    )
-  ];
-
   const answered =
-    selects.filter(
+    [
+      ...document.querySelectorAll(
+        ".cloud-answer"
+      )
+    ].filter(
       (select) =>
         select.value !== ""
     ).length;
@@ -2102,9 +2084,7 @@ function updateAnsweredCount() {
 
 function saveSessionAnswers() {
   const config =
-    certificationConfig[
-      activeCertification
-    ];
+    getActiveConfig();
 
   const answers = {};
 
@@ -2133,9 +2113,7 @@ function saveSessionAnswers() {
 
 function loadSessionAnswers() {
   const config =
-    certificationConfig[
-      activeCertification
-    ];
+    getActiveConfig();
 
   const raw =
     localStorage.getItem(
@@ -2174,11 +2152,13 @@ function loadSessionAnswers() {
   }
 }
 
+/* =========================================================
+   SUBMISSION
+   ========================================================= */
+
 function checkPracticeAnswers() {
   const config =
-    certificationConfig[
-      activeCertification
-    ];
+    getActiveConfig();
 
   let correct = 0;
   let answered = 0;
@@ -2187,6 +2167,8 @@ function checkPracticeAnswers() {
     new Set(
       getWeakAreaIds()
     );
+
+  const domainResults = {};
 
   activeQuestions.forEach(
     (question) => {
@@ -2203,17 +2185,39 @@ function checkPracticeAnswers() {
       const selected =
         select.value;
 
+      const isCorrect =
+        selected ===
+        question.answer;
+
+      if (
+        !domainResults[
+          question.domain
+        ]
+      ) {
+        domainResults[
+          question.domain
+        ] = {
+          correct: 0,
+          total: 0
+        };
+      }
+
+      domainResults[
+        question.domain
+      ].total++;
+
       if (
         selected !== ""
       ) {
         answered++;
       }
 
-      if (
-        selected ===
-        question.answer
-      ) {
+      if (isCorrect) {
         correct++;
+
+        domainResults[
+          question.domain
+        ].correct++;
 
         weakAreas.delete(
           question.id
@@ -2239,8 +2243,7 @@ function checkPracticeAnswers() {
           </span>
 
           <p>
-            Select an answer before
-            submitting the session.
+            No answer selected.
           </p>
         `;
       } else {
@@ -2269,6 +2272,33 @@ function checkPracticeAnswers() {
           </p>
         `;
       }
+    }
+  );
+
+  if (
+    answered <
+    activeQuestions.length
+  ) {
+    const status =
+      document.getElementById(
+        "cloudChallengeStatus"
+      );
+
+    status.textContent =
+      `INCOMPLETE // ${answered}/${activeQuestions.length} questions answered.`;
+
+    status.className =
+      "decision-error";
+
+    return;
+  }
+
+  activeQuestions.forEach(
+    (question) => {
+      const feedback =
+        document.getElementById(
+          `${question.id}-feedback`
+        );
 
       feedback.classList.remove(
         "hidden"
@@ -2276,11 +2306,11 @@ function checkPracticeAnswers() {
     }
   );
 
-  saveSessionAnswers();
-
   saveWeakAreaIds(
     [...weakAreas]
   );
+
+  saveSessionAnswers();
 
   const score =
     Math.round(
@@ -2289,11 +2319,6 @@ function checkPracticeAnswers() {
         activeQuestions.length
       ) * 100
     );
-
-  document.getElementById(
-    "cloudAnsweredCount"
-  ).textContent =
-    answered;
 
   document.getElementById(
     "cloudCorrectCount"
@@ -2305,52 +2330,726 @@ function checkPracticeAnswers() {
   ).textContent =
     `${score}%`;
 
+  const passed =
+    score >= 80;
+
+  if (
+    !currentSessionRecorded
+  ) {
+    saveSessionHistoryEntry({
+      date:
+        new Date()
+          .toISOString(),
+
+      certification:
+        config.code,
+
+      mode:
+        currentSessionLabel,
+
+      score,
+
+      correct,
+
+      total:
+        activeQuestions.length,
+
+      passed,
+
+      domains:
+        domainResults
+    });
+
+    currentSessionRecorded =
+      true;
+  }
+
+  if (passed) {
+    markLabCompleted(
+      "lab01"
+    );
+  }
+
+  if (
+    currentSessionType ===
+    "exam"
+  ) {
+    renderExamResult(
+      score,
+      correct,
+      passed,
+      domainResults
+    );
+
+    return;
+  }
+
   const status =
     document.getElementById(
       "cloudChallengeStatus"
     );
 
-  if (
-    answered <
-    activeQuestions.length
-  ) {
+  if (passed) {
     status.textContent =
-      `INCOMPLETE // ${answered}/${activeQuestions.length} questions answered.`;
-
-    status.className =
-      "decision-error";
-
-    return;
-  }
-
-  if (
-    score >= 80
-  ) {
-    status.textContent =
-      `PASSED // ${correct}/${activeQuestions.length} correct (${score}%). ${config.code} session passed.`;
+      `PASSED // ${correct}/${activeQuestions.length} correct (${score}%).`;
 
     status.className =
       "decision-success";
+  } else {
+    status.textContent =
+      `REVIEW REQUIRED // ${correct}/${activeQuestions.length} correct (${score}%).`;
 
-    markLabCompleted(
-      "lab01"
+    status.className =
+      "decision-error";
+  }
+}
+
+/* =========================================================
+   EXAM RESULT
+   ========================================================= */
+
+function renderExamResult(
+  score,
+  correct,
+  passed,
+  domainResults
+) {
+  const config =
+    getActiveConfig();
+
+  workspaceTitle.textContent =
+    `${config.code} // Exam Result`;
+
+  workspaceStatus.textContent =
+    passed
+      ? "EXAM PASSED"
+      : "EXAM FAILED";
+
+  workspaceContent.innerHTML = `
+    <div class="investigation-layout">
+
+      <section class="case-panel">
+
+        <div class="case-header">
+
+          <div>
+
+            <span class="case-id">
+              EXAM RESULT //
+              ${escapeHtml(
+                config.code
+              )}
+            </span>
+
+            <h3>
+              ${
+                passed
+                  ? "Simulation Passed"
+                  : "Review Required"
+              }
+            </h3>
+
+          </div>
+
+          <span class="severity-badge">
+            ${score}%
+          </span>
+
+        </div>
+
+        <p>
+          You answered
+          <strong>
+            ${correct}
+          </strong>
+          of
+          <strong>
+            ${activeQuestions.length}
+          </strong>
+          questions correctly.
+        </p>
+
+      </section>
+
+
+      <section class="investigation-stats">
+
+        <div>
+          <span>SCORE</span>
+          <strong>${score}%</strong>
+        </div>
+
+        <div>
+          <span>CORRECT</span>
+          <strong>${correct}</strong>
+        </div>
+
+        <div>
+          <span>INCORRECT</span>
+          <strong>
+            ${
+              activeQuestions.length -
+              correct
+            }
+          </strong>
+        </div>
+
+        <div>
+          <span>RESULT</span>
+          <strong>
+            ${
+              passed
+                ? "PASSED"
+                : "FAILED"
+            }
+          </strong>
+        </div>
+
+      </section>
+
+
+      <section class="event-console">
+
+        <div class="console-header">
+
+          <div>
+            <span class="terminal-prompt">
+              root@csfl:~$
+            </span>
+
+            domain-breakdown
+          </div>
+
+        </div>
+
+        <div class="table-wrapper">
+
+          <table class="event-table">
+
+            <thead>
+              <tr>
+                <th>DOMAIN</th>
+                <th>CORRECT</th>
+                <th>TOTAL</th>
+                <th>SCORE</th>
+              </tr>
+            </thead>
+
+            <tbody>
+              ${renderDomainResultRows(
+                domainResults
+              )}
+            </tbody>
+
+          </table>
+
+        </div>
+
+      </section>
+
+
+      <section class="event-console">
+
+        <div class="console-header">
+
+          <div>
+            <span class="terminal-prompt">
+              root@csfl:~$
+            </span>
+
+            answer-review
+          </div>
+
+        </div>
+
+        <div
+          id="examReviewContainer"
+        ></div>
+
+      </section>
+
+
+      <section class="decision-panel">
+
+        <span class="panel-label">
+          EXAM CONTROL
+        </span>
+
+        <div class="decision-actions">
+
+          <button id="retryExamBtn">
+            Retry Exam
+          </button>
+
+          <button id="examModesBtn">
+            Training Modes
+          </button>
+
+          <button id="examCertificationHubBtn">
+            Certification Hub
+          </button>
+
+        </div>
+
+      </section>
+
+    </div>
+  `;
+
+  renderExamReview();
+
+  document
+    .getElementById(
+      "retryExamBtn"
+    )
+    .addEventListener(
+      "click",
+      startExamMode
     );
 
-    return;
+  document
+    .getElementById(
+      "examModesBtn"
+    )
+    .addEventListener(
+      "click",
+      renderTrainingModeHub
+    );
+
+  document
+    .getElementById(
+      "examCertificationHubBtn"
+    )
+    .addEventListener(
+      "click",
+      renderCertificationHub
+    );
+}
+
+function renderExamReview() {
+  const config =
+    getActiveConfig();
+
+  const raw =
+    localStorage.getItem(
+      config.answersKey
+    );
+
+  let answers = {};
+
+  if (raw) {
+    try {
+      answers =
+        JSON.parse(raw);
+    } catch {
+      answers = {};
+    }
   }
 
-  status.textContent =
-    `REVIEW REQUIRED // ${correct}/${activeQuestions.length} correct (${score}%). Weak areas updated.`;
+  const container =
+    document.getElementById(
+      "examReviewContainer"
+    );
 
-  status.className =
-    "decision-error";
+  container.innerHTML =
+    activeQuestions
+      .map(
+        (
+          question,
+          index
+        ) => {
+          const selected =
+            answers[
+              question.id
+            ] || "";
+
+          const correct =
+            selected ===
+            question.answer;
+
+          return `
+            <div class="task-item">
+
+              <span>
+                ${String(
+                  index + 1
+                ).padStart(
+                  2,
+                  "0"
+                )}
+              </span>
+
+              <div>
+
+                <p>
+                  ${escapeHtml(
+                    question.question
+                  )}
+                </p>
+
+                <p>
+                  Your answer:
+                  <strong class="${
+                    correct
+                      ? "event-success"
+                      : "event-failed"
+                  }">
+                    ${escapeHtml(
+                      selected
+                    )}
+                  </strong>
+                </p>
+
+                ${
+                  correct
+                    ? ""
+                    : `
+                      <p>
+                        Correct answer:
+                        <strong>
+                          ${escapeHtml(
+                            question.answer
+                          )}
+                        </strong>
+                      </p>
+                    `
+                }
+
+                <p>
+                  ${escapeHtml(
+                    question.explanation
+                  )}
+                </p>
+
+              </div>
+
+            </div>
+          `;
+        }
+      )
+      .join("");
 }
+
+/* =========================================================
+   HISTORY
+   ========================================================= */
+
+function getSessionHistory() {
+  const config =
+    getActiveConfig();
+
+  if (!config) {
+    return [];
+  }
+
+  const raw =
+    localStorage.getItem(
+      config.historyKey
+    );
+
+  if (!raw) {
+    return [];
+  }
+
+  try {
+    const history =
+      JSON.parse(raw);
+
+    return Array.isArray(
+      history
+    )
+      ? history
+      : [];
+  } catch {
+    localStorage.removeItem(
+      config.historyKey
+    );
+
+    return [];
+  }
+}
+
+function saveSessionHistoryEntry(
+  entry
+) {
+  const config =
+    getActiveConfig();
+
+  const history =
+    getSessionHistory();
+
+  history.unshift(
+    entry
+  );
+
+  const limitedHistory =
+    history.slice(
+      0,
+      30
+    );
+
+  localStorage.setItem(
+    config.historyKey,
+    JSON.stringify(
+      limitedHistory
+    )
+  );
+}
+
+function renderHistoryRows(
+  history
+) {
+  if (
+    history.length === 0
+  ) {
+    return `
+      <tr>
+        <td colspan="5">
+          No completed sessions yet.
+        </td>
+      </tr>
+    `;
+  }
+
+  return history
+    .slice(
+      0,
+      10
+    )
+    .map(
+      (entry) => `
+        <tr>
+
+          <td>
+            ${escapeHtml(
+              formatHistoryDate(
+                entry.date
+              )
+            )}
+          </td>
+
+          <td>
+            ${escapeHtml(
+              entry.mode
+            )}
+          </td>
+
+          <td>
+            <span class="${
+              entry.passed
+                ? "event-success"
+                : "event-failed"
+            }">
+              ${
+                entry.passed
+                  ? "PASSED"
+                  : "FAILED"
+              }
+            </span>
+          </td>
+
+          <td>
+            ${entry.score}%
+          </td>
+
+          <td>
+            ${entry.correct}/${entry.total}
+          </td>
+
+        </tr>
+      `
+    )
+    .join("");
+}
+
+/* =========================================================
+   DOMAIN PERFORMANCE
+   ========================================================= */
+
+function calculateHistoricalDomainPerformance(
+  history
+) {
+  const result = {};
+
+  history.forEach(
+    (session) => {
+      if (
+        !session.domains
+      ) {
+        return;
+      }
+
+      Object.entries(
+        session.domains
+      ).forEach(
+        (
+          [
+            domain,
+            values
+          ]
+        ) => {
+          if (
+            !result[
+              domain
+            ]
+          ) {
+            result[
+              domain
+            ] = {
+              correct: 0,
+              total: 0
+            };
+          }
+
+          result[
+            domain
+          ].correct +=
+            values.correct;
+
+          result[
+            domain
+          ].total +=
+            values.total;
+        }
+      );
+    }
+  );
+
+  return result;
+}
+
+function renderHistoricalDomainRows(
+  performance
+) {
+  const entries =
+    Object.entries(
+      performance
+    );
+
+  if (
+    entries.length === 0
+  ) {
+    return `
+      <tr>
+        <td colspan="4">
+          No performance data yet.
+        </td>
+      </tr>
+    `;
+  }
+
+  return entries
+    .map(
+      (
+        [
+          domain,
+          values
+        ]
+      ) => {
+        const score =
+          Math.round(
+            (
+              values.correct /
+              values.total
+            ) * 100
+          );
+
+        return `
+          <tr>
+
+            <td>
+              ${escapeHtml(
+                domain
+              )}
+            </td>
+
+            <td>
+              ${values.correct}
+            </td>
+
+            <td>
+              ${values.total}
+            </td>
+
+            <td>
+              <span class="${
+                score >= 80
+                  ? "event-success"
+                  : "event-failed"
+              }">
+                ${score}%
+              </span>
+            </td>
+
+          </tr>
+        `;
+      }
+    )
+    .join("");
+}
+
+function renderDomainResultRows(
+  domainResults
+) {
+  return Object.entries(
+    domainResults
+  )
+    .map(
+      (
+        [
+          domain,
+          values
+        ]
+      ) => {
+        const score =
+          Math.round(
+            (
+              values.correct /
+              values.total
+            ) * 100
+          );
+
+        return `
+          <tr>
+
+            <td>
+              ${escapeHtml(
+                domain
+              )}
+            </td>
+
+            <td>
+              ${values.correct}
+            </td>
+
+            <td>
+              ${values.total}
+            </td>
+
+            <td>
+              <span class="${
+                score >= 80
+                  ? "event-success"
+                  : "event-failed"
+              }">
+                ${score}%
+              </span>
+            </td>
+
+          </tr>
+        `;
+      }
+    )
+    .join("");
+}
+
+/* =========================================================
+   RESTART
+   ========================================================= */
 
 function restartCurrentSession() {
   const config =
-    certificationConfig[
-      activeCertification
-    ];
+    getActiveConfig();
 
   localStorage.removeItem(
     config.answersKey
@@ -2360,6 +3059,9 @@ function restartCurrentSession() {
     shuffleArray(
       activeQuestions
     );
+
+  currentSessionRecorded =
+    false;
 
   renderPracticeSession();
 
@@ -2375,9 +3077,7 @@ function restartCurrentSession() {
 
 function getWeakAreaIds() {
   const config =
-    certificationConfig[
-      activeCertification
-    ];
+    getActiveConfig();
 
   if (!config) {
     return [];
@@ -2414,9 +3114,7 @@ function saveWeakAreaIds(
   ids
 ) {
   const config =
-    certificationConfig[
-      activeCertification
-    ];
+    getActiveConfig();
 
   const uniqueIds =
     [...new Set(ids)];
@@ -2443,7 +3141,7 @@ function getActiveDomains() {
 }
 
 /* =========================================================
-   LAB 02 - IDENTITY & ACCESS
+   LAB 02
    ========================================================= */
 
 async function renderIdentityLab() {
@@ -2455,13 +3153,11 @@ async function renderIdentityLab() {
 
   workspaceContent.innerHTML = `
     <div class="loading-state">
-
       <span class="terminal-prompt">
         root@csfl:~$
       </span>
 
       loading role-assignments.csv...
-
     </div>
   `;
 
@@ -2515,7 +3211,6 @@ function renderIdentityWorkspace(
         <div class="case-header">
 
           <div>
-
             <span class="case-id">
               CASE // IAM-002
             </span>
@@ -2523,7 +3218,6 @@ function renderIdentityWorkspace(
             <h3>
               Privileged Access Review
             </h3>
-
           </div>
 
           <span class="severity-badge">
@@ -2533,18 +3227,16 @@ function renderIdentityWorkspace(
         </div>
 
         <p>
-          Review synthetic Azure and Microsoft Entra
-          role assignments and identify excessive
-          privileges and least-privilege violations.
+          Review synthetic role assignments
+          and identify excessive privileges,
+          missing MFA and least-privilege violations.
         </p>
 
         <div class="case-indicators">
-
           <span>Privileged Roles</span>
           <span>Least Privilege</span>
           <span>MFA</span>
           <span>Unexpected Access</span>
-
         </div>
 
       </section>
@@ -2553,43 +3245,23 @@ function renderIdentityWorkspace(
       <section class="investigation-stats">
 
         <div>
-          <span>
-            TOTAL ASSIGNMENTS
-          </span>
-
-          <strong id="totalAssignments">
-            0
-          </strong>
+          <span>TOTAL ASSIGNMENTS</span>
+          <strong id="totalAssignments">0</strong>
         </div>
 
         <div>
-          <span>
-            PRIVILEGED
-          </span>
-
-          <strong id="privilegedAssignments">
-            0
-          </strong>
+          <span>PRIVILEGED</span>
+          <strong id="privilegedAssignments">0</strong>
         </div>
 
         <div>
-          <span>
-            UNEXPECTED
-          </span>
-
-          <strong id="unexpectedAssignments">
-            0
-          </strong>
+          <span>UNEXPECTED</span>
+          <strong id="unexpectedAssignments">0</strong>
         </div>
 
         <div>
-          <span>
-            HIGH / CRITICAL
-          </span>
-
-          <strong id="dangerousAssignments">
-            0
-          </strong>
+          <span>HIGH / CRITICAL</span>
+          <strong id="dangerousAssignments">0</strong>
         </div>
 
       </section>
@@ -2600,13 +3272,11 @@ function renderIdentityWorkspace(
         <div class="console-header">
 
           <div>
-
             <span class="terminal-prompt">
               root@csfl:~$
             </span>
 
             inspect role-assignments.csv
-
           </div>
 
           <select id="identityFilter">
@@ -2640,7 +3310,6 @@ function renderIdentityWorkspace(
           <table class="event-table">
 
             <thead>
-
               <tr>
                 <th>USER</th>
                 <th>JOB ROLE</th>
@@ -2651,13 +3320,11 @@ function renderIdentityWorkspace(
                 <th>EXPECTED</th>
                 <th>RISK</th>
               </tr>
-
             </thead>
 
             <tbody
               id="identityTableBody"
-            >
-            </tbody>
+            ></tbody>
 
           </table>
 
@@ -2686,17 +3353,15 @@ function renderIdentityWorkspace(
 
           <label>
             <input type="checkbox" />
-            Identify privileged accounts
-            without MFA.
+            Identify privileged accounts without MFA.
           </label>
 
           <label>
             <input type="checkbox" />
-            Determine the highest-risk assignment.
+            Determine highest-risk assignment.
           </label>
 
         </div>
-
 
         <div class="decision-panel">
 
@@ -2731,8 +3396,7 @@ Additional checks:"
 
           <div
             id="identityDecisionStatus"
-          >
-          </div>
+          ></div>
 
         </div>
 
@@ -2874,8 +3538,7 @@ function handleIdentityFilter(
     [...roleAssignments];
 
   if (
-    filter ===
-    "privileged"
+    filter === "privileged"
   ) {
     filtered =
       roleAssignments.filter(
@@ -2886,8 +3549,7 @@ function handleIdentityFilter(
   }
 
   if (
-    filter ===
-    "unexpected"
+    filter === "unexpected"
   ) {
     filtered =
       roleAssignments.filter(
@@ -2898,8 +3560,7 @@ function handleIdentityFilter(
   }
 
   if (
-    filter ===
-    "no-mfa"
+    filter === "no-mfa"
   ) {
     filtered =
       roleAssignments.filter(
@@ -2910,8 +3571,7 @@ function handleIdentityFilter(
   }
 
   if (
-    filter ===
-    "dangerous"
+    filter === "dangerous"
   ) {
     filtered =
       roleAssignments.filter(
@@ -2933,12 +3593,12 @@ function handleIdentityFilter(
 function renderIdentityTable(
   assignments
 ) {
-  const tableBody =
+  const body =
     document.getElementById(
       "identityTableBody"
     );
 
-  tableBody.innerHTML =
+  body.innerHTML =
     assignments
       .map(
         (assignment) => {
@@ -3028,9 +3688,7 @@ function renderIdentityTable(
                   assignment.RiskLevel
                 )}">
                   ${escapeHtml(
-                    assignment
-                      .RiskLevel
-                      .toUpperCase()
+                    assignment.RiskLevel.toUpperCase()
                   )}
                 </span>
               </td>
@@ -3116,7 +3774,7 @@ function revealIdentityFinding() {
 }
 
 /* =========================================================
-   LAB 03 - ZERO TRUST
+   LAB 03
    ========================================================= */
 
 async function renderZeroTrustLab() {
@@ -3128,13 +3786,11 @@ async function renderZeroTrustLab() {
 
   workspaceContent.innerHTML = `
     <div class="loading-state">
-
       <span class="terminal-prompt">
         root@csfl:~$
       </span>
 
       loading signin-events.csv...
-
     </div>
   `;
 
@@ -3188,7 +3844,6 @@ function renderZeroTrustWorkspace(
         <div class="case-header">
 
           <div>
-
             <span class="case-id">
               CASE // ZT-003
             </span>
@@ -3196,7 +3851,6 @@ function renderZeroTrustWorkspace(
             <h3>
               Suspicious Cloud Sign-in Activity
             </h3>
-
           </div>
 
           <span class="severity-badge">
@@ -3211,12 +3865,10 @@ function renderZeroTrustWorkspace(
         </p>
 
         <div class="case-indicators">
-
           <span>Unknown devices</span>
           <span>No MFA</span>
           <span>Foreign locations</span>
           <span>Failed → Success</span>
-
         </div>
 
       </section>
@@ -3225,43 +3877,23 @@ function renderZeroTrustWorkspace(
       <section class="investigation-stats">
 
         <div>
-          <span>
-            TOTAL EVENTS
-          </span>
-
-          <strong id="totalEvents">
-            0
-          </strong>
+          <span>TOTAL EVENTS</span>
+          <strong id="totalEvents">0</strong>
         </div>
 
         <div>
-          <span>
-            FAILED
-          </span>
-
-          <strong id="failedEvents">
-            0
-          </strong>
+          <span>FAILED</span>
+          <strong id="failedEvents">0</strong>
         </div>
 
         <div>
-          <span>
-            HIGH RISK
-          </span>
-
-          <strong id="highRiskEvents">
-            0
-          </strong>
+          <span>HIGH RISK</span>
+          <strong id="highRiskEvents">0</strong>
         </div>
 
         <div>
-          <span>
-            NO MFA SUCCESS
-          </span>
-
-          <strong id="noMfaEvents">
-            0
-          </strong>
+          <span>NO MFA SUCCESS</span>
+          <strong id="noMfaEvents">0</strong>
         </div>
 
       </section>
@@ -3272,13 +3904,11 @@ function renderZeroTrustWorkspace(
         <div class="console-header">
 
           <div>
-
             <span class="terminal-prompt">
               root@csfl:~$
             </span>
 
             inspect signin-events.csv
-
           </div>
 
           <select id="eventFilter">
@@ -3312,7 +3942,6 @@ function renderZeroTrustWorkspace(
           <table class="event-table">
 
             <thead>
-
               <tr>
                 <th>TIME</th>
                 <th>USER</th>
@@ -3324,13 +3953,11 @@ function renderZeroTrustWorkspace(
                 <th>MFA</th>
                 <th>RISK</th>
               </tr>
-
             </thead>
 
             <tbody
               id="eventTableBody"
-            >
-            </tbody>
+            ></tbody>
 
           </table>
 
@@ -3359,7 +3986,7 @@ function renderZeroTrustWorkspace(
 
           <label>
             <input type="checkbox" />
-            Identify the highest-risk event.
+            Identify highest-risk event.
           </label>
 
           <label>
@@ -3369,7 +3996,6 @@ function renderZeroTrustWorkspace(
           </label>
 
         </div>
-
 
         <div class="decision-panel">
 
@@ -3401,8 +4027,7 @@ function renderZeroTrustWorkspace(
 
           <div
             id="decisionStatus"
-          >
-          </div>
+          ></div>
 
         </div>
 
@@ -3454,9 +4079,6 @@ function renderZeroTrustWorkspace(
 
   textarea.style.zIndex =
     "20";
-
-  textarea.style.userSelect =
-    "text";
 
   updateZeroTrustStats(
     events
@@ -3544,8 +4166,7 @@ function handleEventFilter(
     [...signInEvents];
 
   if (
-    filter ===
-    "failed"
+    filter === "failed"
   ) {
     filtered =
       signInEvents.filter(
@@ -3556,8 +4177,7 @@ function handleEventFilter(
   }
 
   if (
-    filter ===
-    "no-mfa"
+    filter === "no-mfa"
   ) {
     filtered =
       signInEvents.filter(
@@ -3570,8 +4190,7 @@ function handleEventFilter(
   }
 
   if (
-    filter ===
-    "high-risk"
+    filter === "high-risk"
   ) {
     filtered =
       signInEvents.filter(
@@ -3680,9 +4299,7 @@ function renderEventTable(
                   event.RiskLevel
                 )}">
                   ${escapeHtml(
-                    event
-                      .RiskLevel
-                      .toUpperCase()
+                    event.RiskLevel.toUpperCase()
                   )}
                 </span>
               </td>
@@ -3826,6 +4443,18 @@ function parseCsv(csvText) {
    HELPERS
    ========================================================= */
 
+function getActiveConfig() {
+  if (
+    !activeCertification
+  ) {
+    return null;
+  }
+
+  return certificationConfig[
+    activeCertification
+  ];
+}
+
 function shuffleArray(array) {
   const copy =
     [...array];
@@ -3892,6 +4521,27 @@ function formatTime(timestamp) {
   return timestamp;
 }
 
+function formatHistoryDate(
+  timestamp
+) {
+  if (!timestamp) {
+    return "";
+  }
+
+  const date =
+    new Date(timestamp);
+
+  if (
+    Number.isNaN(
+      date.getTime()
+    )
+  ) {
+    return timestamp;
+  }
+
+  return date.toLocaleString();
+}
+
 function escapeHtml(value) {
   return String(value)
     .replaceAll(
@@ -3917,7 +4567,7 @@ function escapeHtml(value) {
 }
 
 /* =========================================================
-   INITIALIZE
+   INIT
    ========================================================= */
 
 initializeProgressControls();
