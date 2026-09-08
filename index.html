@@ -164,7 +164,7 @@
 
         <div>
           <strong>Local Lab Environment</strong>
-          <p>No Azure connection required</p>
+          <p>Progress stored locally</p>
         </div>
       </div>
     </header>
@@ -179,15 +179,15 @@
       </div>
 
       <div class="stat-card">
-        <span>Security Detections</span>
-        <strong>3</strong>
-        <p>KQL detection examples</p>
+        <span>Completed Labs</span>
+        <strong id="completedLabsCount">0 / 3</strong>
+        <p>Completed training modules</p>
       </div>
 
       <div class="stat-card">
-        <span>Environment</span>
-        <strong>Local</strong>
-        <p>Safe learning environment</p>
+        <span>Overall Progress</span>
+        <strong id="overallProgress">0%</strong>
+        <p>Stored in local browser storage</p>
       </div>
 
     </section>
@@ -219,6 +219,7 @@
           <div class="lab-tags">
             <span>AZ-900</span>
             <span>Fundamentals</span>
+            <span id="lab01Status">NOT STARTED</span>
           </div>
 
           <h3>Cloud Basics</h3>
@@ -254,6 +255,7 @@
           <div class="lab-tags">
             <span>SC-900</span>
             <span>Identity</span>
+            <span id="lab02Status">NOT STARTED</span>
           </div>
 
           <h3>Identity and Access</h3>
@@ -289,6 +291,7 @@
           <div class="lab-tags">
             <span>SC-900</span>
             <span>Interactive</span>
+            <span id="lab03Status">NOT STARTED</span>
           </div>
 
           <h3>Zero Trust Investigation</h3>
