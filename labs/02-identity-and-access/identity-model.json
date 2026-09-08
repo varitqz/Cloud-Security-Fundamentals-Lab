@@ -1,0 +1,86 @@
+{
+  "lab": "02-identity-and-access",
+  "purpose": "Local identity and access model for learning RBAC, least privilege and privileged access concepts.",
+  "users": [
+    {
+      "name": "Sarah Frey",
+      "role": "Junior Security Analyst",
+      "accountType": "standard-user",
+      "groups": ["Security Analysts"],
+      "notes": "Needs read access for investigations, but should not manage Azure resources."
+    },
+    {
+      "name": "Max Keller",
+      "role": "Cloud Engineer",
+      "accountType": "standard-user",
+      "groups": ["Cloud Engineers"],
+      "notes": "Needs limited resource management permissions in a specific lab scope."
+    },
+    {
+      "name": "Jannik Richter",
+      "role": "Cloud Security Lab Owner",
+      "accountType": "admin-user",
+      "groups": ["Cloud Admins"],
+      "notes": "Uses admin access only in the lab scope. High privilege should be monitored."
+    }
+  ],
+  "groups": [
+    {
+      "name": "Security Analysts",
+      "purpose": "Read and investigate security data.",
+      "recommendedRoles": ["Security Reader", "Reader"]
+    },
+    {
+      "name": "Cloud Engineers",
+      "purpose": "Manage selected cloud resources in controlled scopes.",
+      "recommendedRoles": ["Contributor"]
+    },
+    {
+      "name": "Cloud Admins",
+      "purpose": "Manage lab-level administrative tasks.",
+      "recommendedRoles": ["Owner", "User Access Administrator"]
+    }
+  ],
+  "roleAssignments": [
+    {
+      "principal": "Sarah Frey",
+      "type": "user",
+      "role": "Security Reader",
+      "scope": "Subscription",
+      "reason": "Sarah needs to investigate alerts and security posture."
+    },
+    {
+      "principal": "Max Keller",
+      "type": "user",
+      "role": "Contributor",
+      "scope": "Resource Group: rg-security-lab",
+      "reason": "Max needs to manage lab resources, but not the whole subscription."
+    },
+    {
+      "principal": "Jannik Richter",
+      "type": "user",
+      "role": "Owner",
+      "scope": "Resource Group: rg-security-lab",
+      "reason": "Jannik owns the local learning lab and manages lab-level access."
+    }
+  ],
+  "securityRules": [
+    "No standard user should receive permanent Owner permissions.",
+    "Privileged access should be limited to the smallest possible scope.",
+    "Role assignments should be reviewed regularly.",
+    "Suspicious role assignments should be investigated through audit logs.",
+    "Admin accounts should use MFA and should be monitored closely."
+  ],
+  "detectionIdeas": [
+    {
+      "name": "Suspicious Role Assignment",
+      "table": "AuditLogs",
+      "reason": "Role assignments can indicate privilege escalation or persistence."
+    },
+    {
+      "name": "Risky Admin Sign-in",
+      "table": "SigninLogs",
+      "reason": "Successful sign-ins from admin-like accounts should be reviewed carefully."
+    }
+  ]
+}
