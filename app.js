@@ -3314,6 +3314,7 @@ function renderIdentityWorkspace(
                 <th>USER</th>
                 <th>JOB ROLE</th>
                 <th>ASSIGNED ROLE</th>
+                <th>ROLE SYSTEM</th>
                 <th>SCOPE</th>
                 <th>MFA</th>
                 <th>PRIVILEGED</th>
@@ -3417,9 +3418,9 @@ Additional checks:"
         </h3>
 
         <p>
-          Helpdesk Technician,
-          Global Administrator,
-          tenant scope and MFA disabled.
+          Helpdesk Technician with the Microsoft Entra
+          Global Administrator directory role at tenant
+          scope, permanent access and MFA disabled.
         </p>
 
       </section>
@@ -3631,7 +3632,13 @@ function renderIdentityTable(
 
               <td>
                 ${escapeHtml(
-                  assignment.AzureRole
+                  assignment.AssignedRole
+                )}
+              </td>
+
+              <td>
+                ${escapeHtml(
+                  assignment.RoleSystem
                 )}
               </td>
 
