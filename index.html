@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>Cloud Security Fundamentals Lab</title>
+
+  <link rel="stylesheet" href="style.css" />
+</head>
+
+<body>
+
+  <!-- LEFT AMBIENT HUD -->
+  <aside class="ambient-hud ambient-hud-left" aria-hidden="true">
+    <div class="hud-header">
+      <span>NODE MAP</span>
+      <small>LIVE</small>
+    </div>
+
+    <div class="network-map">
+      <svg
+        class="network-svg"
+        viewBox="0 0 180 260"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <line x1="90" y1="32" x2="40" y2="92" class="network-line" />
+        <line x1="90" y1="32" x2="139" y2="91" class="network-line" />
+        <line x1="40" y1="92" x2="68" y2="155" class="network-line" />
+        <line x1="139" y1="91" x2="112" y2="155" class="network-line" />
+        <line x1="68" y1="155" x2="112" y2="155" class="network-line" />
+        <line x1="68" y1="155" x2="36" y2="219" class="network-line" />
+        <line x1="112" y1="155" x2="144" y2="218" class="network-line" />
+        <line x1="36" y1="219" x2="144" y2="218" class="network-line faint" />
+
+        <circle cx="90" cy="32" r="5" class="network-node node-core" />
+        <circle cx="40" cy="92" r="4" class="network-node node-a" />
+        <circle cx="139" cy="91" r="4" class="network-node node-b" />
+        <circle cx="68" cy="155" r="4" class="network-node node-c" />
+        <circle cx="112" cy="155" r="4" class="network-node node-d" />
+        <circle cx="36" cy="219" r="4" class="network-node node-e" />
+        <circle cx="144" cy="218" r="4" class="network-node node-f" />
+
+        <circle cx="90" cy="32" r="14" class="network-ring ring-one" />
+        <circle cx="112" cy="155" r="11" class="network-ring ring-two" />
+      </svg>
+    </div>
+
+    <div class="hud-readout">
+      <div>
+        <span>ENV</span>
+        <strong>LOCAL</strong>
+      </div>
+
+      <div>
+        <span>NET</span>
+        <strong>ISOLATED</strong>
+      </div>
+
+      <div>
+        <span>DATA</span>
+        <strong>SYNTHETIC</strong>
+      </div>
+    </div>
+
+    <div class="hud-terminal">
+      <p>&gt; topology.init</p>
+      <p>&gt; nodes.discovered: 07</p>
+      <p>&gt; external_uplink: none</p>
+      <p class="terminal-ok">&gt; environment.secure</p>
+    </div>
+  </aside>
+
+
+  <!-- RIGHT AMBIENT HUD -->
+  <aside class="ambient-hud ambient-hud-right" aria-hidden="true">
+    <div class="hud-header threat-header">
+      <span>THREAT MONITOR</span>
+      <small>ACTIVE</small>
+    </div>
+
+    <div class="radar-shell">
+      <div class="radar">
+        <div class="radar-crosshair radar-crosshair-x"></div>
+        <div class="radar-crosshair radar-crosshair-y"></div>
+
+        <div class="radar-ring radar-ring-one"></div>
+        <div class="radar-ring radar-ring-two"></div>
+        <div class="radar-ring radar-ring-three"></div>
+
+        <div class="radar-sweep"></div>
+
+        <span class="radar-blip blip-one"></span>
+        <span class="radar-blip blip-two"></span>
+        <span class="radar-blip blip-three"></span>
+      </div>
+
+      <span class="radar-caption">SECTOR // 07-G</span>
+    </div>
+
+    <div class="threat-feed">
+      <div class="feed-line">
+        <span class="feed-time">16:02</span>
+        <span>AUTH_STREAM</span>
+        <strong class="feed-ok">OK</strong>
+      </div>
+
+      <div class="feed-line">
+        <span class="feed-time">16:03</span>
+        <span>RISK_ENGINE</span>
+        <strong class="feed-watch">WATCH</strong>
+      </div>
+
+      <div class="feed-line">
+        <span class="feed-time">16:04</span>
+        <span>CASE_ZT003</span>
+        <strong class="feed-alert">HIGH</strong>
+      </div>
+
+      <div class="feed-line">
+        <span class="feed-time">16:05</span>
+        <span>LOG_PIPELINE</span>
+        <strong class="feed-ok">OK</strong>
+      </div>
+    </div>
+
+    <div class="threat-meter">
+      <div class="meter-header">
+        <span>THREAT LEVEL</span>
+        <strong>37%</strong>
+      </div>
+
+      <div class="meter-track">
+        <div class="meter-value"></div>
+      </div>
+    </div>
+  </aside>
+
+
+  <!-- MAIN APPLICATION -->
+  <main class="app">
+
+    <header class="hero">
+      <div>
+        <p class="eyebrow">LOCAL SECURITY TRAINING ENVIRONMENT</p>
+
+        <h1>Cloud Security Fundamentals Lab</h1>
+
+        <p class="hero-text">
+          Practice Azure, SC-900 and cloud security concepts with local
+          scenarios, datasets and analyst tasks.
+        </p>
+
+        <div class="hero-tags">
+          <span>AZ-900</span>
+          <span>SC-900</span>
+          <span>No Azure Required</span>
+          <span>No Cloud Costs</span>
+        </div>
+      </div>
+
+      <div class="status-card">
+        <span class="status-dot"></span>
+
+        <div>
+          <strong>Local Lab Environment</strong>
+          <p>No Azure connection required</p>
+        </div>
+      </div>
+    </header>
+
+
+    <section class="stats-grid">
+
+      <div class="stat-card">
+        <span>Available Labs</span>
+        <strong>3</strong>
+        <p>Cloud, Identity and Zero Trust</p>
+      </div>
+
+      <div class="stat-card">
+        <span>Security Detections</span>
+        <strong>3</strong>
+        <p>KQL detection examples</p>
+      </div>
+
+      <div class="stat-card">
+        <span>Environment</span>
+        <strong>Local</strong>
+        <p>Safe learning environment</p>
+      </div>
+
+    </section>
+
+
+    <section class="section-header">
+
+      <div>
+        <p class="eyebrow">TRAINING MODULES</p>
+        <h2>Choose a Lab</h2>
+      </div>
+
+      <p>
+        Work through a scenario, inspect the available information and make
+        your own security decision.
+      </p>
+
+    </section>
+
+
+    <section class="lab-grid">
+
+      <article class="lab-card">
+
+        <div class="lab-number">01</div>
+
+        <div class="lab-content">
+
+          <div class="lab-tags">
+            <span>AZ-900</span>
+            <span>Fundamentals</span>
+          </div>
+
+          <h3>Cloud Basics</h3>
+
+          <p>
+            Learn cloud service models, shared responsibility and the Azure
+            resource hierarchy.
+          </p>
+
+          <ul>
+            <li>IaaS, PaaS and SaaS</li>
+            <li>Shared Responsibility</li>
+            <li>Azure Resource Hierarchy</li>
+          </ul>
+
+          <button
+            class="lab-button"
+            data-lab="cloud-basics"
+          >
+            Open Lab
+          </button>
+
+        </div>
+      </article>
+
+
+      <article class="lab-card">
+
+        <div class="lab-number">02</div>
+
+        <div class="lab-content">
+
+          <div class="lab-tags">
+            <span>SC-900</span>
+            <span>Identity</span>
+          </div>
+
+          <h3>Identity and Access</h3>
+
+          <p>
+            Investigate users, roles, permissions and least-privilege access
+            decisions.
+          </p>
+
+          <ul>
+            <li>Authentication vs Authorization</li>
+            <li>RBAC</li>
+            <li>Privileged Access</li>
+          </ul>
+
+          <button
+            class="lab-button"
+            data-lab="identity-access"
+          >
+            Open Lab
+          </button>
+
+        </div>
+      </article>
+
+
+      <article class="lab-card featured">
+
+        <div class="lab-number">03</div>
+
+        <div class="lab-content">
+
+          <div class="lab-tags">
+            <span>SC-900</span>
+            <span>Interactive</span>
+          </div>
+
+          <h3>Zero Trust Investigation</h3>
+
+          <p>
+            Analyze synthetic sign-in events and identify suspicious cloud
+            authentication activity.
+          </p>
+
+          <ul>
+            <li>Signin Event Dataset</li>
+            <li>MFA and Device Signals</li>
+            <li>Analyst Decision</li>
+          </ul>
+
+          <button
+            class="lab-button primary"
+            data-lab="zero-trust"
+          >
+            Start Investigation
+          </button>
+
+        </div>
+      </article>
+
+    </section>
+
+
+    <section class="workspace">
+
+      <div class="workspace-header">
+
+        <div>
+          <p class="eyebrow">ANALYST WORKSPACE</p>
+          <h2 id="workspaceTitle">Select a Lab</h2>
+        </div>
+
+        <span id="workspaceStatus">
+          Waiting for selection
+        </span>
+
+      </div>
+
+
+      <div
+        id="workspaceContent"
+        class="workspace-content"
+      >
+        <p>
+          Select one of the labs above to begin the exercise.
+        </p>
+      </div>
+
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+
+</body>
+</html>
