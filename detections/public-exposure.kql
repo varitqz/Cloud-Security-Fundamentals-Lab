@@ -1,0 +1,4 @@
+AzureActivity
+| where OperationName has "securityRules/write"
+| project TimeGenerated, Caller, ResourceGroup, Resource, Details, Risk
+| order by TimeGenerated desc

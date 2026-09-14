@@ -1,0 +1,6 @@
+SigninLogs
+| where ResultType == 0
+| where MFAUsed == false
+| where UserPrincipalName has_any ("admin", "tom")
+| project TimeGenerated, UserPrincipalName, IPAddress, Country, AppDisplayName, RiskLevel
+| order by TimeGenerated desc

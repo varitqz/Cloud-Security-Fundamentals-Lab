@@ -1,0 +1,32 @@
+.ambient-grid {
+  position: fixed; inset: 0; z-index: -4; pointer-events:none; opacity:.32;
+  background-image:
+    linear-gradient(rgba(255,255,255,.025) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255,255,255,.025) 1px, transparent 1px);
+  background-size: 44px 44px;
+  mask-image: radial-gradient(circle at 55% 35%, black 10%, transparent 82%);
+}
+.scanline { position:fixed;left:0;right:0;top:-20vh;height:16vh;z-index:240;pointer-events:none;opacity:.08;background:linear-gradient(180deg,transparent,rgba(255,48,79,.35),transparent);animation:scanline 11s linear infinite;mix-blend-mode:screen; }
+.mouse-glow { position:fixed;z-index:-2;width:520px;height:520px;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);background:radial-gradient(circle,rgba(255,48,79,.055),transparent 68%);left:50%;top:40%;transition:opacity .2s ease; }
+.panel::after,.card::after,.metric-card::before { content:""; position:absolute; inset:0; pointer-events:none; background:linear-gradient(115deg,transparent 0 42%,rgba(255,255,255,.018) 50%,transparent 58%); transform:translateX(-100%); transition:transform .55s ease; }
+.panel:hover::after,.card:hover::after,.metric-card:hover::before { transform:translateX(100%); }
+.radar-sweep { animation:radarSpin 5.6s linear infinite; }
+.radar-node { animation:nodePulse 2.2s ease-in-out infinite; }.radar-node.n2{animation-delay:.4s}.radar-node.n3{animation-delay:1s}.radar-node.n4{animation-delay:1.5s}
+.pipeline i::after { animation:pipeDot 2.2s linear infinite; }.pipeline i:nth-of-type(2)::after{animation-delay:.45s}.pipeline i:nth-of-type(3)::after{animation-delay:.9s}.pipeline i:nth-of-type(4)::after{animation-delay:1.35s}
+.brand-mark { animation:brandBreath 4s ease-in-out infinite; }
+.status-dot { animation:statusPulse 1.8s ease-in-out infinite; }
+.reveal { opacity:0; transform:translateY(10px); }.reveal.visible{opacity:1;transform:none;transition:opacity .45s ease,transform .45s ease}
+.threat-flash { animation:threatFlash .8s ease 2; }
+
+@keyframes radarSpin { to{transform:rotate(360deg)} }
+@keyframes nodePulse { 0%,100%{opacity:.45;transform:scale(.8)} 50%{opacity:1;transform:scale(1.35)} }
+@keyframes pipeDot { from{left:0} to{left:calc(100% - 5px)} }
+@keyframes brandBreath { 0%,100%{box-shadow:inset 0 0 18px rgba(255,48,79,.1),0 0 14px rgba(255,48,79,.04)} 50%{box-shadow:inset 0 0 24px rgba(255,48,79,.16),0 0 28px rgba(255,48,79,.1)} }
+@keyframes statusPulse { 0%,100%{opacity:.6}50%{opacity:1;box-shadow:0 0 14px rgba(86,214,154,.9)} }
+@keyframes scanline { from{transform:translateY(-10vh)} to{transform:translateY(130vh)} }
+@keyframes threatFlash { 0%,100%{box-shadow:none}50%{box-shadow:0 0 0 1px rgba(255,48,79,.3),0 0 40px rgba(255,48,79,.2)} }
+
+@media (prefers-reduced-motion: reduce) {
+  *,*::before,*::after{animation-duration:.001ms!important;animation-iteration-count:1!important;transition-duration:.001ms!important;scroll-behavior:auto!important}
+  .scanline,.mouse-glow{display:none!important}
+}
