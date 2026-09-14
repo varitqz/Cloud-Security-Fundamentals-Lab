@@ -1,1035 +1,222 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta
-    name="viewport"
-    content="width=device-width, initial-scale=1.0"
-  />
-
-  <meta
-    name="description"
-    content="Cloud Security Fundamentals Lab - local Azure and Microsoft Security training environment."
-  />
-
-  <title>
-    Cloud Security Fundamentals Lab
-  </title>
-
-  <link
-    rel="stylesheet"
-    href="style.css"
-  />
-
-  <script
-    src="app.js"
-    defer
-  ></script>
-  <link rel="stylesheet" href="effects.css" />
-  <link rel="stylesheet" href="ambient.css" />
-  <link rel="stylesheet" href="final-polish.css" />
-  <link rel="stylesheet" href="scale.css" />
-  <link rel="stylesheet" href="controls.css" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#09090b" />
+  <meta name="description" content="Cloud Security Fundamentals Lab v5.0 — local-first Azure, Entra ID, Zero Trust, KQL, detection engineering and incident response training." />
+  <title>Cloud Security Fundamentals Lab // v5.0</title>
+  <link rel="stylesheet" href="assets/css/app.css" />
+  <link rel="stylesheet" href="assets/css/effects.css" />
+  <link rel="stylesheet" href="assets/css/responsive.css" />
 </head>
-
 <body>
+  <div class="ambient-grid" aria-hidden="true"></div>
+  <div class="scanline" aria-hidden="true"></div>
+  <div id="mouseGlow" class="mouse-glow" aria-hidden="true"></div>
 
-  <div class="background-grid"></div>
-  <div class="scanlines"></div>
-  <div class="red-ambient red-ambient-left"></div>
-  <div class="red-ambient red-ambient-right"></div>
-
-
-  <!-- =====================================================
-       LEFT CLOUD HUD
-       ===================================================== -->
-
-  <aside class="ambient-hud ambient-hud-left">
-
-    <div class="hud-header">
-
-      <span>
-        CLOUD_INFRA
-      </span>
-
-      <span class="hud-online">
-        ONLINE
-      </span>
-
+  <header class="topbar">
+    <div class="brand" data-action="navigate" data-view="dashboard" tabindex="0" role="button" aria-label="Open dashboard">
+      <div class="brand-mark" aria-hidden="true">
+        <span class="brand-mark-core"></span>
+      </div>
+      <div class="brand-copy">
+        <div class="brand-title">CLOUD SECURITY <span>// LAB</span></div>
+        <div class="brand-sub">BUILD. DETECT. DEFEND. <b>v5.0</b></div>
+      </div>
     </div>
 
+    <nav class="primary-nav" aria-label="Primary navigation">
+      <button class="nav-btn active" data-action="navigate" data-view="dashboard">Command</button>
+      <button class="nav-btn" data-action="navigate" data-view="learn">Learn</button>
+      <button class="nav-btn" data-action="navigate" data-view="identity">Identity</button>
+      <button class="nav-btn" data-action="navigate" data-view="zero-trust">Zero Trust</button>
+      <button class="nav-btn" data-action="navigate" data-view="detections">Detect</button>
+      <button class="nav-btn" data-action="navigate" data-view="incidents">Respond</button>
+      <button class="nav-btn" data-action="navigate" data-view="posture">Posture</button>
+      <button class="nav-btn" data-action="navigate" data-view="iac">IaC</button>
+      <button class="nav-btn" data-action="navigate" data-view="portfolio">Portfolio</button>
+    </nav>
 
-    <div class="cloud-map">
-
-      <div class="cloud-node internet-node">
-        INTERNET
-      </div>
-
-      <div class="cloud-line cloud-line-01"></div>
-
-      <div class="cloud-node region-node">
-        WESTEUROPE
-      </div>
-
-      <div class="cloud-line cloud-line-02"></div>
-
-      <div class="cloud-node vnet-node">
-        VNET
-      </div>
-
-      <div class="cloud-branches">
-
-        <div class="cloud-branch">
-
-          <span class="branch-line"></span>
-
-          <div class="mini-node">
-            WEB_SUBNET
-          </div>
-
-        </div>
-
-        <div class="cloud-branch">
-
-          <span class="branch-line"></span>
-
-          <div class="mini-node critical-node">
-            SEC_SUBNET
-          </div>
-
-        </div>
-
-      </div>
-
-      <div class="cloud-line cloud-line-03"></div>
-
-      <div class="cloud-node sentinel-node">
-        SENTINEL
-      </div>
-
+    <div class="top-actions">
+      <button class="icon-btn" id="commandBtn" title="Command palette (Ctrl+K)" aria-label="Open command palette">⌘K</button>
+      <button class="icon-btn" id="exportBtn" title="Export progress" aria-label="Export progress">⇩</button>
+      <button class="icon-btn danger-soft" id="resetProgressBtn" title="Reset local progress" aria-label="Reset local progress">RESET</button>
+      <div class="local-status"><span class="status-dot"></span>LOCAL / NO COST</div>
     </div>
-
-
-    <div class="hud-divider"></div>
-
-
-    <div class="hud-readout">
-
-      <div>
-        <span>REGION</span>
-        <strong>WESTEUROPE</strong>
-      </div>
-
-      <div>
-        <span>NETWORK</span>
-        <strong>SEGMENTED</strong>
-      </div>
-
-      <div>
-        <span>IDENTITY</span>
-        <strong>VERIFIED</strong>
-      </div>
-
-      <div>
-        <span>SIEM</span>
-        <strong>ACTIVE</strong>
-      </div>
-
-    </div>
-
-
-    <div class="hud-terminal">
-
-      <p>
-        <span>&gt;</span>
-        establishing secure uplink
-      </p>
-
-      <p>
-        <span>&gt;</span>
-        topology discovery complete
-      </p>
-
-      <p>
-        <span>&gt;</span>
-        telemetry forwarding active
-      </p>
-
-      <p>
-        <span>&gt;</span>
-        waiting for security events_
-      </p>
-
-    </div>
-
-  </aside>
-
-
-  <!-- =====================================================
-       RIGHT THREAT HUD
-       ===================================================== -->
-
-  <aside class="ambient-hud ambient-hud-right">
-
-    <div class="hud-header">
-
-      <span>
-        THREAT_INTEL
-      </span>
-
-      <span class="hud-warning">
-        ELEVATED
-      </span>
-
-    </div>
-
-
-    <div class="threat-radar">
-
-      <div class="radar-ring radar-ring-1"></div>
-      <div class="radar-ring radar-ring-2"></div>
-      <div class="radar-ring radar-ring-3"></div>
-
-      <div class="radar-axis radar-axis-x"></div>
-      <div class="radar-axis radar-axis-y"></div>
-
-      <div class="radar-sweep"></div>
-
-      <span class="threat-blip threat-blip-1"></span>
-      <span class="threat-blip threat-blip-2"></span>
-      <span class="threat-blip threat-blip-3"></span>
-
-      <div class="radar-center"></div>
-
-    </div>
-
-
-    <div class="threat-level">
-
-      <div class="threat-level-header">
-        <span>THREAT LEVEL</span>
-        <strong>ELEVATED</strong>
-      </div>
-
-      <div class="threat-meter">
-        <span></span>
-      </div>
-
-    </div>
-
-
-    <div class="hud-readout threat-readout">
-
-      <div>
-        <span>AUTH ANOMALIES</span>
-        <strong>04</strong>
-      </div>
-
-      <div>
-        <span>RISKY USERS</span>
-        <strong>02</strong>
-      </div>
-
-      <div>
-        <span>ACTIVE SIGNALS</span>
-        <strong>17</strong>
-      </div>
-
-      <div>
-        <span>INCIDENTS</span>
-        <strong>01</strong>
-      </div>
-
-    </div>
-
-
-    <div class="hud-terminal threat-feed">
-
-      <p>
-        <span>&gt;</span>
-        credential anomaly detected
-      </p>
-
-      <p>
-        <span>&gt;</span>
-        unknown device observed
-      </p>
-
-      <p>
-        <span>&gt;</span>
-        privileged identity accessed
-      </p>
-
-      <p>
-        <span>&gt;</span>
-        correlation engine active_
-      </p>
-
-    </div>
-
-  </aside>
-
-
-  <!-- =====================================================
-       MAIN APPLICATION
-       ===================================================== -->
-
-  <main class="app-shell">
-
-    <!-- TOP BAR -->
-
-    <header class="topbar">
-
-      <div class="brand">
-
-        <div class="brand-mark">
-          CS
-        </div>
-
-        <div>
-
-          <span class="brand-kicker">
-            LOCAL SECURITY ENVIRONMENT
-          </span>
-
-          <strong>
-            CLOUD SECURITY FUNDAMENTALS LAB
-          </strong>
-
-        </div>
-
-      </div>
-
-
-      <div class="topbar-system">
-
-        <span>
-          NODE // CSFL-01
-        </span>
-
-        <span>
-          ENV // LOCAL
-        </span>
-
-        <span class="system-online">
-          ● ONLINE
-        </span>
-
-      </div>
-
-    </header>
-
-
-    <!-- HERO -->
-
-    <section class="hero">
-
-      <div class="hero-copy">
-
-        <div class="hero-eyebrow">
-          <span class="live-dot"></span>
-          CLOUD SECURITY TRAINING SYSTEM
-        </div>
-
-        <h1>
-          BUILD.
-          <span>DETECT.</span>
-          DEFEND.
-        </h1>
-
-        <p class="hero-description">
-          Interactive local-first training for
-          Azure fundamentals, Microsoft security,
-          identity, Zero Trust and detection
-          engineering.
-        </p>
-
-
-        <div class="hero-command">
-
-          <span class="terminal-prompt">
-            root@csfl:~$
-          </span>
-
-          <span class="command-text">
-            initialize cloud-security-environment
-          </span>
-
-          <span class="command-cursor"></span>
-
-        </div>
-
-
-        <div class="hero-tags">
-
-          <span>
-            AZ-900
-          </span>
-
-          <span>
-            SC-900
-          </span>
-
-          <span>
-            ZERO TRUST
-          </span>
-
-          <span>
-            SENTINEL
-          </span>
-
-          <span>
-            KQL
-          </span>
-
-        </div>
-
-      </div>
-
-
-      <div class="hero-system">
-
-        <div class="system-frame">
-
-          <span class="corner corner-tl"></span>
-          <span class="corner corner-tr"></span>
-          <span class="corner corner-bl"></span>
-          <span class="corner corner-br"></span>
-
-          <div class="system-frame-header">
-
-            <span>
-              SECURITY_CONTROL_NODE
-            </span>
-
-            <span class="system-id">
-              09-A7
-            </span>
-
-          </div>
-
-
-          <div class="core-visual">
-
-            <div class="core-ring core-ring-outer"></div>
-            <div class="core-ring core-ring-middle"></div>
-            <div class="core-ring core-ring-inner"></div>
-
-            <div class="core-cross core-cross-x"></div>
-            <div class="core-cross core-cross-y"></div>
-
-            <div class="core-center">
-              CSFL
+  </header>
+
+  <main id="app" class="app-shell" tabindex="-1">
+    <!-- DASHBOARD -->
+    <section class="view active" data-view-panel="dashboard">
+      <div class="dashboard-grid hero-grid">
+        <article class="hero panel panel-accent">
+          <div class="hero-copy">
+            <div class="eyebrow">LOCAL-FIRST CLOUD SECURITY TRAINING ENVIRONMENT</div>
+            <h1>BUILD.<br><span>DETECT.</span><br>DEFEND.</h1>
+            <p>Practice Azure security, Microsoft Entra ID, Zero Trust, KQL, detection engineering and incident response in one synthetic environment — without deploying paid cloud resources.</p>
+            <div class="hero-actions">
+              <button class="btn primary" data-action="navigate" data-view="detections">OPEN DETECTION LAB</button>
+              <button class="btn" data-action="navigate" data-view="identity">RUN ACCESS REVIEW</button>
             </div>
-
-            <span class="orbit-dot orbit-dot-1"></span>
-            <span class="orbit-dot orbit-dot-2"></span>
-            <span class="orbit-dot orbit-dot-3"></span>
-
-          </div>
-
-
-          <div class="system-frame-data">
-
-            <div>
-              <span>IDENTITY</span>
-              <strong>ACTIVE</strong>
+            <div class="hero-chips">
+              <span>100 ORIGINAL QUESTIONS</span><span>8 DETECTIONS</span><span>5 INCIDENT SCENARIOS</span><span>LOCAL KQL ENGINE</span>
             </div>
-
-            <div>
-              <span>NETWORK</span>
-              <strong>SECURED</strong>
+          </div>
+          <div class="hero-visual" aria-hidden="true">
+            <div class="radar-shell">
+              <div class="radar-ring r1"></div><div class="radar-ring r2"></div><div class="radar-ring r3"></div>
+              <div class="radar-cross x"></div><div class="radar-cross y"></div>
+              <div class="radar-sweep"></div>
+              <div class="radar-node n1"></div><div class="radar-node n2"></div><div class="radar-node n3"></div><div class="radar-node n4"></div>
+              <div class="radar-center"><span></span></div>
             </div>
-
-            <div>
-              <span>TELEMETRY</span>
-              <strong>STREAMING</strong>
-            </div>
-
+            <div class="visual-caption">THREAT SIGNAL FIELD // SYNTHETIC TELEMETRY</div>
           </div>
-
-        </div>
-
-      </div>
-
-    </section>
-
-
-    <!-- STATUS -->
-
-    <section class="status-grid">
-
-      <article class="status-card">
-
-        <div class="status-icon">
-          ◈
-        </div>
-
-        <div>
-
-          <span class="status-label">
-            ENVIRONMENT
-          </span>
-
-          <strong>
-            Local Lab Environment
-          </strong>
-
-          <p>
-            Progress stored locally
-          </p>
-
-        </div>
-
-      </article>
-
-
-      <article class="status-card stat-card">
-
-        <span class="status-label">
-          AVAILABLE LABS
-        </span>
-
-        <strong class="large-stat">
-          03
-        </strong>
-
-        <p>
-          Training modules
-        </p>
-
-      </article>
-
-
-      <article class="status-card stat-card">
-
-        <span class="status-label">
-          COMPLETED LABS
-        </span>
-
-        <strong
-          id="completedLabsCount"
-          class="large-stat"
-        >
-          0 / 3
-        </strong>
-
-        <p>
-          Local progress
-        </p>
-
-      </article>
-
-
-      <article class="status-card stat-card">
-
-        <span class="status-label">
-          OVERALL PROGRESS
-        </span>
-
-        <strong
-          id="overallProgress"
-          class="large-stat"
-        >
-          0%
-        </strong>
-
-        <p>
-          Training completion
-        </p>
-
-      </article>
-
-    </section>
-
-
-    <!-- LAB SECTION -->
-
-    <section class="section-block">
-
-      <div class="section-heading">
-
-        <div>
-
-          <span class="section-index">
-            01
-          </span>
-
-          <div>
-
-            <span class="eyebrow">
-              TRAINING MODULES
-            </span>
-
-            <h2>
-              Select operational environment
-            </h2>
-
-          </div>
-
-        </div>
-
-
-        <div class="section-meta">
-
-          <span>
-            MODULES // 03
-          </span>
-
-          <span>
-            STATUS // READY
-          </span>
-
-        </div>
-
-      </div>
-
-
-      <div class="lab-grid">
-
-        <!-- LAB 01 -->
-
-        <article class="lab-card">
-
-          <span class="card-corner card-corner-tl"></span>
-          <span class="card-corner card-corner-br"></span>
-
-          <div class="lab-number">
-            01
-          </div>
-
-          <div class="lab-card-top">
-
-            <span class="lab-category">
-              CERTIFICATION TRAINING
-            </span>
-
-            <span
-              id="lab01Status"
-              class="lab-status"
-            >
-              NOT STARTED
-            </span>
-
-          </div>
-
-
-          <h3>
-            Azure & Microsoft Security
-          </h3>
-
-          <p>
-            Adaptive AZ-900 and SC-900
-            certification training with
-            exam simulations, weak-area
-            tracking and performance history.
-          </p>
-
-
-          <div class="lab-tech">
-
-            <span>AZ-900</span>
-            <span>SC-900</span>
-            <span>100 QUESTIONS</span>
-
-          </div>
-
-
-          <button
-            class="lab-button"
-            data-lab="cloud-basics"
-          >
-
-            <span>
-              ENTER TRAINING
-            </span>
-
-            <span class="button-arrow">
-              →
-            </span>
-
-          </button>
-
         </article>
 
-
-        <!-- LAB 02 -->
-
-        <article class="lab-card">
-
-          <span class="card-corner card-corner-tl"></span>
-          <span class="card-corner card-corner-br"></span>
-
-          <div class="lab-number">
-            02
+        <aside class="panel system-panel">
+          <div class="panel-title-row"><h2>System Status</h2><span class="micro-badge green">READY</span></div>
+          <div class="status-stack">
+            <div><span>Telemetry</span><b>ONLINE</b></div>
+            <div><span>Identity Graph</span><b>LOADED</b></div>
+            <div><span>Detection Engine</span><b>ARMED</b></div>
+            <div><span>KQL Runtime</span><b>LOCAL</b></div>
+            <div><span>Cloud Cost</span><b>€0.00</b></div>
           </div>
-
-          <div class="lab-card-top">
-
-            <span class="lab-category">
-              IDENTITY SECURITY
-            </span>
-
-            <span
-              id="lab02Status"
-              class="lab-status"
-            >
-              NOT STARTED
-            </span>
-
-          </div>
-
-
-          <h3>
-            Identity & Access Review
-          </h3>
-
-          <p>
-            Investigate privileged identities,
-            excessive permissions, missing MFA
-            and least-privilege violations.
-          </p>
-
-
-          <div class="lab-tech">
-
-            <span>ENTRA ID</span>
-            <span>RBAC</span>
-            <span>IAM</span>
-
-          </div>
-
-
-          <button
-            class="lab-button"
-            data-lab="identity-access"
-          >
-
-            <span>
-              START INVESTIGATION
-            </span>
-
-            <span class="button-arrow">
-              →
-            </span>
-
-          </button>
-
-        </article>
-
-
-        <!-- LAB 03 -->
-
-        <article class="lab-card">
-
-          <span class="card-corner card-corner-tl"></span>
-          <span class="card-corner card-corner-br"></span>
-
-          <div class="lab-number">
-            03
-          </div>
-
-          <div class="lab-card-top">
-
-            <span class="lab-category">
-              ZERO TRUST
-            </span>
-
-            <span
-              id="lab03Status"
-              class="lab-status"
-            >
-              NOT STARTED
-            </span>
-
-          </div>
-
-
-          <h3>
-            Suspicious Sign-in Investigation
-          </h3>
-
-          <p>
-            Analyze synthetic sign-in telemetry,
-            identify risky behavior and respond
-            using Zero Trust principles.
-          </p>
-
-
-          <div class="lab-tech">
-
-            <span>SIGN-IN LOGS</span>
-            <span>MFA</span>
-            <span>RISK</span>
-
-          </div>
-
-
-          <button
-            class="lab-button"
-            data-lab="zero-trust"
-          >
-
-            <span>
-              OPEN CASE
-            </span>
-
-            <span class="button-arrow">
-              →
-            </span>
-
-          </button>
-
-        </article>
-
+          <div class="mini-terminal" id="systemTerminal" aria-live="polite"></div>
+        </aside>
       </div>
 
+      <div class="metric-grid" id="dashboardMetrics"></div>
+
+      <div class="dashboard-grid dashboard-main">
+        <section class="panel mission-panel">
+          <div class="panel-title-row">
+            <div><div class="eyebrow">MISSION CONTROL</div><h2>Training Modules</h2></div>
+            <span class="micro-copy">Select a module to continue.</span>
+          </div>
+          <div class="module-grid" id="moduleGrid"></div>
+        </section>
+
+        <aside class="panel skill-panel">
+          <div class="panel-title-row"><div><div class="eyebrow">CAPABILITY MAP</div><h2>Skill Matrix</h2></div><span id="skillLevelBadge" class="micro-badge">LEVEL 1</span></div>
+          <div id="skillMatrix" class="skill-matrix"></div>
+        </aside>
+      </div>
+
+      <div class="dashboard-grid dashboard-bottom">
+        <section class="panel">
+          <div class="panel-title-row"><div><div class="eyebrow">SECURITY FABRIC</div><h2>Detection Pipeline</h2></div><span class="micro-copy">Synthetic data flow</span></div>
+          <div class="pipeline" aria-label="Detection pipeline">
+            <div class="pipe-node"><b>DATA SOURCE</b><span>Entra / Azure</span></div><i></i>
+            <div class="pipe-node"><b>LOG ANALYTICS</b><span>Local datasets</span></div><i></i>
+            <div class="pipe-node"><b>KQL</b><span>Query runtime</span></div><i></i>
+            <div class="pipe-node"><b>ALERT</b><span>Detection hit</span></div><i></i>
+            <div class="pipe-node"><b>INCIDENT</b><span>Investigation</span></div>
+          </div>
+        </section>
+        <aside class="panel">
+          <div class="panel-title-row"><div><div class="eyebrow">ACTIVITY</div><h2>Recent Actions</h2></div></div>
+          <div id="recentActions" class="activity-list"></div>
+        </aside>
+      </div>
     </section>
 
-
-    <!-- PIPELINE -->
-
-    <section class="pipeline-section">
-
-      <div class="section-heading">
-
-        <div>
-
-          <span class="section-index">
-            02
-          </span>
-
-          <div>
-
-            <span class="eyebrow">
-              SECURITY PIPELINE
-            </span>
-
-            <h2>
-              Cloud telemetry flow
-            </h2>
-
-          </div>
-
-        </div>
-
+    <!-- LEARN -->
+    <section class="view" data-view-panel="learn">
+      <div class="view-header">
+        <div><div class="eyebrow">KNOWLEDGE SYSTEM</div><h1>Certification Training</h1><p>Original local question banks for AZ-900 and SC-900. Training threshold: 80% — a project setting, not Microsoft's official scoring model.</p></div>
+        <div class="header-actions"><button class="btn" id="showHistoryBtn">SESSION HISTORY</button><button class="btn" id="showWeakAreasBtn">WEAK AREAS</button></div>
       </div>
-
-
-      <div class="pipeline">
-
-        <div class="pipeline-node">
-
-          <span>01</span>
-
-          <strong>
-            DATA SOURCE
-          </strong>
-
-          <small>
-            Identity / Cloud
-          </small>
-
-        </div>
-
-
-        <div class="pipeline-link">
-          <span></span>
-        </div>
-
-
-        <div class="pipeline-node">
-
-          <span>02</span>
-
-          <strong>
-            CONNECTOR
-          </strong>
-
-          <small>
-            Ingestion
-          </small>
-
-        </div>
-
-
-        <div class="pipeline-link">
-          <span></span>
-        </div>
-
-
-        <div class="pipeline-node">
-
-          <span>03</span>
-
-          <strong>
-            LOG ANALYTICS
-          </strong>
-
-          <small>
-            Telemetry
-          </small>
-
-        </div>
-
-
-        <div class="pipeline-link">
-          <span></span>
-        </div>
-
-
-        <div class="pipeline-node active-pipeline-node">
-
-          <span>04</span>
-
-          <strong>
-            KQL
-          </strong>
-
-          <small>
-            Detection
-          </small>
-
-        </div>
-
-
-        <div class="pipeline-link">
-          <span></span>
-        </div>
-
-
-        <div class="pipeline-node">
-
-          <span>05</span>
-
-          <strong>
-            INCIDENT
-          </strong>
-
-          <small>
-            Response
-          </small>
-
-        </div>
-
-      </div>
-
+      <div id="learnHome" class="learn-home"></div>
+      <div id="quizWorkspace" class="quiz-workspace hidden"></div>
+      <div id="learnDrawer" class="drawer-panel hidden"></div>
     </section>
 
-
-    <!-- WORKSPACE -->
-
-    <section class="workspace">
-
-      <div class="workspace-header">
-
-        <div>
-
-          <span class="workspace-index">
-            ACTIVE_WORKSPACE
-          </span>
-
-          <h2
-            id="workspaceTitle"
-          >
-            Select a Lab
-          </h2>
-
-        </div>
-
-
-        <div class="workspace-state">
-
-          <span class="state-dot"></span>
-
-          <span
-            id="workspaceStatus"
-          >
-            Waiting for selection
-          </span>
-
-        </div>
-
+    <!-- IDENTITY -->
+    <section class="view" data-view-panel="identity">
+      <div class="view-header">
+        <div><div class="eyebrow">IDENTITY & ACCESS // LAB 02</div><h1>Privilege Exposure Review</h1><p>Review Azure RBAC and Microsoft Entra role assignments, identify unnecessary privilege and document the recommended response.</p></div>
+        <div class="header-actions"><button class="btn primary" id="runAccessReviewBtn">RUN ACCESS REVIEW</button><button class="btn" id="resetIdentityBtn">RESET LAB</button></div>
       </div>
-
-
-      <div
-        id="workspaceContent"
-        class="workspace-body"
-      >
-
-        <div class="workspace-empty">
-
-          <div class="empty-target">
-
-            <div class="empty-ring"></div>
-            <div class="empty-ring empty-ring-small"></div>
-
-            <span>
-              +
-            </span>
-
-          </div>
-
-          <span class="terminal-prompt">
-            root@csfl:~$
-          </span>
-
-          <p>
-            Select a training module
-            to initialize the workspace.
-          </p>
-
-        </div>
-
-      </div>
-
+      <div id="identityContent"></div>
     </section>
 
-
-    <!-- FOOTER -->
-
-    <footer>
-
-      <div>
-
-        <strong>
-          CLOUD SECURITY FUNDAMENTALS LAB
-        </strong>
-
-        <span>
-          LOCAL-FIRST SECURITY TRAINING
-        </span>
-
+    <!-- ZERO TRUST -->
+    <section class="view" data-view-panel="zero-trust">
+      <div class="view-header">
+        <div><div class="eyebrow">ZERO TRUST // LAB 03</div><h1>Suspicious Sign-in Investigation</h1><p>Correlate location, device, MFA, risk and sign-in outcome. Assume breach, verify explicitly and contain only after evidence supports the decision.</p></div>
+        <div class="header-actions"><button class="btn" id="simulateSignInBtn">SIMULATE NEW SIGNAL</button><button class="btn" id="resetZeroTrustBtn">RESET LAB</button></div>
       </div>
+      <div id="zeroTrustContent"></div>
+    </section>
 
-      <div class="footer-meta">
-
-        <span>
-          NO AZURE DEPLOYMENT
-        </span>
-
-        <span>
-          NO PAID SERVICES
-        </span>
-
-        <span>
-          NOT AFFILIATED WITH MICROSOFT
-        </span>
-
+    <!-- DETECTIONS -->
+    <section class="view" data-view-panel="detections">
+      <div class="view-header">
+        <div><div class="eyebrow">DETECTION ENGINEERING // LAB 04</div><h1>Detection Workbench</h1><p>Build and run KQL against synthetic SigninLogs, AuditLogs and AzureActivity. Save rules, generate alerts and explain the query pipeline.</p></div>
+        <div class="header-actions"><button class="btn" id="loadDefaultDetectionBtn">LOAD DEFAULT</button><button class="btn primary" id="runKqlBtn">RUN QUERY</button></div>
       </div>
+      <div id="detectionContent"></div>
+    </section>
 
-    </footer>
+    <!-- INCIDENTS -->
+    <section class="view" data-view-panel="incidents">
+      <div class="view-header">
+        <div><div class="eyebrow">SECURITY OPERATIONS // LAB 05</div><h1>Incident Response Center</h1><p>Turn detection hits into structured investigations. Review evidence, document analyst notes, contain sessions and close incidents.</p></div>
+        <div class="header-actions"><button class="btn" id="seedIncidentBtn">GENERATE SCENARIO</button></div>
+      </div>
+      <div id="incidentContent"></div>
+    </section>
 
+    <!-- POSTURE -->
+    <section class="view" data-view-panel="posture">
+      <div class="view-header">
+        <div><div class="eyebrow">CLOUD POSTURE // LAB 06</div><h1>Defender-style Security Posture</h1><p>Review synthetic Azure resource configurations, prioritize findings and improve the local Secure Score through remediation.</p></div>
+        <div class="header-actions"><button class="btn" id="resetPostureBtn">RESET FINDINGS</button></div>
+      </div>
+      <div id="postureContent"></div>
+    </section>
+
+    <!-- IAC -->
+    <section class="view" data-view-panel="iac">
+      <div class="view-header">
+        <div><div class="eyebrow">INFRASTRUCTURE AS CODE // LAB 07</div><h1>Bicep Security Review</h1><p>Inspect a segmented VNet design, review NSG intent and run a local static security scan. Nothing is deployed.</p></div>
+        <div class="header-actions"><button class="btn primary" id="runIaCScanBtn">RUN SECURITY SCAN</button></div>
+      </div>
+      <div id="iacContent"></div>
+    </section>
+
+    <!-- PORTFOLIO -->
+    <section class="view" data-view-panel="portfolio">
+      <div class="view-header">
+        <div><div class="eyebrow">EVIDENCE // LAB 08</div><h1>Portfolio Casebook</h1><p>Turn completed investigations into concise evidence of your security thinking: signal → analysis → decision → response.</p></div>
+        <div class="header-actions"><button class="btn primary" id="exportCasebookBtn">EXPORT CASEBOOK.MD</button><button class="btn" id="exportStateBtn">EXPORT LAB STATE</button></div>
+      </div>
+      <div id="portfolioContent"></div>
+    </section>
   </main>
 
-  <script src="effects.js"></script>
-  <script src="ambient.js"></script>
-  <script src="final-polish.js"></script>
-  <script src="controls.js"></script>
+  <div id="toastRegion" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+
+  <div id="modalBackdrop" class="modal-backdrop hidden" aria-hidden="true">
+    <div id="modal" class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle"></div>
+  </div>
+
+  <div id="commandPalette" class="command-palette hidden" aria-hidden="true">
+    <div class="command-box">
+      <div class="command-head"><span>COMMAND PALETTE</span><kbd>ESC</kbd></div>
+      <input id="commandSearch" type="search" placeholder="Search modules, views and actions..." autocomplete="off" />
+      <div id="commandResults" class="command-results"></div>
+    </div>
+  </div>
+
+  <script src="assets/js/questions.js"></script>
+  <script src="assets/js/data.js"></script>
+  <script src="assets/js/kql-engine.js"></script>
+  <script src="assets/js/state.js"></script>
+  <script src="assets/js/app.js"></script>
+  <script src="assets/js/effects.js"></script>
 </body>
 </html>
-
-
-
-

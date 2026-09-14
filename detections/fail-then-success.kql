@@ -1,0 +1,4 @@
+SigninLogs
+| where UserPrincipalName == "admin@example.com"
+| project TimeGenerated, UserPrincipalName, IPAddress, Country, Device, Result, MFAUsed
+| order by TimeGenerated asc

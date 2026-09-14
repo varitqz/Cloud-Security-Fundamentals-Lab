@@ -1,0 +1,5 @@
+AuditLogs
+| where Category == "RoleManagement"
+| where OperationName == "Add member to role"
+| project TimeGenerated, InitiatorUPN, TargetUPN, NewValue, Risk
+| order by TimeGenerated desc

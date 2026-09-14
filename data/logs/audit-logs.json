@@ -1,0 +1,68 @@
+[
+  {
+    "TimeGenerated": "2026-09-09T16:45:08Z",
+    "Category": "RoleManagement",
+    "OperationName": "Add member to role",
+    "InitiatorUPN": "admin@example.com",
+    "TargetUPN": "admin@example.com",
+    "PropertyName": "Role.DisplayName",
+    "NewValue": "Global Administrator",
+    "Result": "success",
+    "Risk": "critical"
+  },
+  {
+    "TimeGenerated": "2026-09-09T15:40:23Z",
+    "Category": "RoleManagement",
+    "OperationName": "Add member to role",
+    "InitiatorUPN": "cloudadmin@contoso.com",
+    "TargetUPN": "sarah@contoso.com",
+    "PropertyName": "Role.DisplayName",
+    "NewValue": "Security Reader",
+    "Result": "success",
+    "Risk": "low"
+  },
+  {
+    "TimeGenerated": "2026-09-09T14:11:04Z",
+    "Category": "UserManagement",
+    "OperationName": "Update user",
+    "InitiatorUPN": "helpdesk@contoso.com",
+    "TargetUPN": "lena@contoso.com",
+    "PropertyName": "Department",
+    "NewValue": "Marketing",
+    "Result": "success",
+    "Risk": "low"
+  },
+  {
+    "TimeGenerated": "2026-09-09T12:02:48Z",
+    "Category": "RoleManagement",
+    "OperationName": "Add member to role",
+    "InitiatorUPN": "tom@contoso.com",
+    "TargetUPN": "tom@contoso.com",
+    "PropertyName": "Role.DisplayName",
+    "NewValue": "Global Administrator",
+    "Result": "success",
+    "Risk": "critical"
+  },
+  {
+    "TimeGenerated": "2026-09-09T10:44:31Z",
+    "Category": "GroupManagement",
+    "OperationName": "Add member to group",
+    "InitiatorUPN": "helpdesk@contoso.com",
+    "TargetUPN": "max@contoso.com",
+    "PropertyName": "Group.DisplayName",
+    "NewValue": "Cloud Engineers",
+    "Result": "success",
+    "Risk": "low"
+  },
+  {
+    "TimeGenerated": "2026-09-09T09:16:07Z",
+    "Category": "ApplicationManagement",
+    "OperationName": "Add service principal",
+    "InitiatorUPN": "cloudadmin@contoso.com",
+    "TargetUPN": "svc-backup",
+    "PropertyName": "App.DisplayName",
+    "NewValue": "Backup Automation",
+    "Result": "success",
+    "Risk": "medium"
+  }
+]

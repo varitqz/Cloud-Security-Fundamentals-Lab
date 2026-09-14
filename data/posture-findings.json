@@ -1,0 +1,52 @@
+[
+  {
+    "id": "F-001",
+    "severity": "critical",
+    "resource": "nsg-web",
+    "title": "RDP open to the Internet",
+    "category": "Networking",
+    "points": 18,
+    "remediated": false,
+    "recommendation": "Restrict TCP/3389 to approved admin sources or remove direct exposure."
+  },
+  {
+    "id": "F-002",
+    "severity": "high",
+    "resource": "nsg-web",
+    "title": "SSH exposed from Internet",
+    "category": "Networking",
+    "points": 14,
+    "remediated": false,
+    "recommendation": "Remove public TCP/22 or use a controlled administration path."
+  },
+  {
+    "id": "F-003",
+    "severity": "high",
+    "resource": "stpubliclab",
+    "title": "Public blob access enabled",
+    "category": "Data Protection",
+    "points": 12,
+    "remediated": false,
+    "recommendation": "Disable anonymous public blob access unless explicitly required."
+  },
+  {
+    "id": "F-004",
+    "severity": "medium",
+    "resource": "kv-security-lab",
+    "title": "Purge protection disabled",
+    "category": "Key Management",
+    "points": 8,
+    "remediated": false,
+    "recommendation": "Enable purge protection for stronger recovery against destructive changes."
+  },
+  {
+    "id": "F-005",
+    "severity": "medium",
+    "resource": "vm-web-01",
+    "title": "Management path lacks Just-In-Time controls",
+    "category": "Compute",
+    "points": 7,
+    "remediated": false,
+    "recommendation": "Use restricted administration and time-bound access controls."
+  }
+]

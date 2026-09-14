@@ -1,0 +1,91 @@
+[
+  {
+    "id": "INC-2401",
+    "title": "Suspicious admin sign-in after repeated failures",
+    "severity": "critical",
+    "status": "Active",
+    "owner": "Unassigned",
+    "created": "2026-09-09T16:43:30Z",
+    "entity": "admin@example.com",
+    "summary": "Four failed sign-ins from Russia were followed by a successful Azure Portal sign-in without MFA.",
+    "evidence": [
+      "185.220.101.44 / Russia",
+      "Unknown Linux device",
+      "MFA not used",
+      "Successful session S-9005"
+    ],
+    "timeline": [
+      {
+        "time": "16:41",
+        "title": "Authentication failures begin",
+        "detail": "Repeated ResultType 50126 from 185.220.101.44."
+      },
+      {
+        "time": "16:43",
+        "title": "Successful sign-in",
+        "detail": "admin@example.com signs in to Azure Portal without MFA."
+      },
+      {
+        "time": "16:45",
+        "title": "Role assignment observed",
+        "detail": "Global Administrator role assignment created by admin@example.com."
+      },
+      {
+        "time": "16:49",
+        "title": "NSG rule changed",
+        "detail": "Inbound TCP/22 from Internet added to nsg-web."
+      }
+    ],
+    "notes": [],
+    "actions": []
+  },
+  {
+    "id": "INC-2402",
+    "title": "Unexpected Global Administrator assignment",
+    "severity": "critical",
+    "status": "New",
+    "owner": "Unassigned",
+    "created": "2026-09-09T12:03:10Z",
+    "entity": "tom@contoso.com",
+    "summary": "Helpdesk technician received a permanent Global Administrator role without expected access.",
+    "evidence": [
+      "Role: Global Administrator",
+      "MFA: disabled",
+      "Access: permanent",
+      "ExpectedAccess: false"
+    ],
+    "timeline": [
+      {
+        "time": "12:02",
+        "title": "Role assignment",
+        "detail": "tom@contoso.com added to Global Administrator."
+      }
+    ],
+    "notes": [],
+    "actions": []
+  },
+  {
+    "id": "INC-2403",
+    "title": "Storage key enumeration by service account",
+    "severity": "medium",
+    "status": "Investigating",
+    "owner": "Jannik",
+    "created": "2026-09-09T11:16:00Z",
+    "entity": "service-backup@contoso.com",
+    "summary": "Backup service account with subscription Owner listed storage keys.",
+    "evidence": [
+      "Owner at Subscription",
+      "Permanent access",
+      "Storage listKeys operation"
+    ],
+    "timeline": [
+      {
+        "time": "11:15",
+        "title": "Storage keys listed",
+        "detail": "service-backup called listKeys on stbackup01."
+      }
+    ],
+    "notes": [],
+    "actions": []
+  }
+]

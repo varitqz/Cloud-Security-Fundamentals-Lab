@@ -1,9 +1,0 @@
-User,JobRole,AssignedRole,RoleSystem,Scope,AccessType,MFAEnabled,Privileged,ExpectedAccess,RiskLevel
-Sarah Frey,Junior Security Analyst,Security Reader,Microsoft Entra ID,Tenant,Permanent,true,false,true,low
-Max Keller,Cloud Engineer,Contributor,Azure RBAC,Resource Group rg-security-lab,Permanent,true,false,true,low
-Jannik Richter,Cloud Security Lab Owner,Owner,Azure RBAC,Resource Group rg-security-lab,Permanent,true,true,true,medium
-Lena Hoffmann,Marketing Specialist,Reader,Azure RBAC,Resource Group rg-marketing,Permanent,true,false,true,low
-Tom Weber,Helpdesk Technician,Global Administrator,Microsoft Entra ID,Tenant,Permanent,false,true,false,critical
-service-backup,Backup Service Account,Owner,Azure RBAC,Subscription,Permanent,false,true,false,high
-Sarah Frey,Junior Security Analyst,Owner,Azure RBAC,Subscription,Permanent,true,true,false,critical
-Max Keller,Cloud Engineer,Reader,Azure RBAC,Subscription,Permanent,true,false,false,medium

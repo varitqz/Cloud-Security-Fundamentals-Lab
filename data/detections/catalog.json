@@ -1,0 +1,90 @@
+[
+  {
+    "id": "failed-logins",
+    "name": "Failed Logins",
+    "source": "SigninLogs",
+    "severity": "medium",
+    "mitre": "T1110",
+    "technique": "Brute Force",
+    "query": "SigninLogs\n| where ResultType != 0\n| summarize FailedAttempts = count() by UserPrincipalName, IPAddress\n| where FailedAttempts > 2\n| order by FailedAttempts desc",
+    "description": "Find repeated failed sign-ins grouped by user and IP.",
+    "useCase": "Brute force, credential stuffing or password spray triage."
+  },
+  {
+    "id": "password-spray",
+    "name": "Password Spray",
+    "source": "SigninLogs",
+    "severity": "high",
+    "mitre": "T1110.003",
+    "technique": "Password Spraying",
+    "query": "SigninLogs\n| where ResultType != 0\n| summarize Attempts = count() by IPAddress\n| where Attempts > 3\n| order by Attempts desc",
+    "description": "Find source IPs generating repeated failed sign-ins.",
+    "useCase": "Identify a single source testing credentials across identities."
+  },
+  {
+    "id": "fail-then-success",
+    "name": "Multiple Failures Then Success",
+    "source": "SigninLogs",
+    "severity": "high",
+    "mitre": "T1078",
+    "technique": "Valid Accounts",
+    "query": "SigninLogs\n| where UserPrincipalName == \"admin@example.com\"\n| project TimeGenerated, UserPrincipalName, IPAddress, Country, Device, Result, MFAUsed\n| order by TimeGenerated asc",
+    "description": "Review a suspicious sequence of failures followed by a success.",
+    "useCase": "Potential credential compromise after repeated authentication failures."
+  },
+  {
+    "id": "risky-admin",
+    "name": "Risky Admin Sign-in",
+    "source": "SigninLogs",
+    "severity": "high",
+    "mitre": "T1078",
+    "technique": "Valid Accounts",
+    "query": "SigninLogs\n| where ResultType == 0\n| where UserPrincipalName has_any (\"admin\", \"tom\")\n| project TimeGenerated, UserPrincipalName, IPAddress, Country, Device, MFAUsed, RiskLevel\n| order by TimeGenerated desc",
+    "description": "Review successful sign-ins from admin-like accounts.",
+    "useCase": "Privileged account compromise and suspicious admin access."
+  },
+  {
+    "id": "role-assignment",
+    "name": "Suspicious Role Assignment",
+    "source": "AuditLogs",
+    "severity": "critical",
+    "mitre": "T1098",
+    "technique": "Account Manipulation",
+    "query": "AuditLogs\n| where Category == \"RoleManagement\"\n| where OperationName == \"Add member to role\"\n| project TimeGenerated, InitiatorUPN, TargetUPN, NewValue, Risk\n| order by TimeGenerated desc",
+    "description": "Surface new Entra role assignments and their initiator.",
+    "useCase": "Privilege escalation and persistence through directory role assignment."
+  },
+  {
+    "id": "impossible-travel",
+    "name": "Impossible Travel Review",
+    "source": "SigninLogs",
+    "severity": "medium",
+    "mitre": "T1078",
+    "technique": "Valid Accounts",
+    "query": "SigninLogs\n| project TimeGenerated, UserPrincipalName, Country, City, IPAddress, Result\n| order by UserPrincipalName asc",
+    "description": "Review sign-in geography per user for impossible travel patterns.",
+    "useCase": "Potential stolen credentials used from distant geographies."
+  },
+  {
+    "id": "public-exposure",
+    "name": "Public Management Port Exposure",
+    "source": "AzureActivity",
+    "severity": "high",
+    "mitre": "T1190",
+    "technique": "Exploit Public-Facing Application",
+    "query": "AzureActivity\n| where OperationName has \"securityRules/write\"\n| project TimeGenerated, Caller, ResourceGroup, Resource, Details, Risk\n| order by TimeGenerated desc",
+    "description": "Find NSG rule changes that may expose management ports.",
+    "useCase": "Detect insecure control-plane network changes."
+  },
+  {
+    "id": "priv-mfa-gap",
+    "name": "Privileged MFA Gap",
+    "source": "SigninLogs",
+    "severity": "critical",
+    "mitre": "T1078",
+    "technique": "Valid Accounts",
+    "query": "SigninLogs\n| where ResultType == 0\n| where MFAUsed == false\n| where UserPrincipalName has_any (\"admin\", \"tom\")\n| project TimeGenerated, UserPrincipalName, IPAddress, Country, AppDisplayName, RiskLevel\n| order by TimeGenerated desc",
+    "description": "Find successful privileged-looking sign-ins without MFA.",
+    "useCase": "Prioritize risky privileged authentication paths."
+  }
+]

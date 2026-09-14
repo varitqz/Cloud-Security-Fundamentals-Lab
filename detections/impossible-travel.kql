@@ -1,0 +1,3 @@
+SigninLogs
+| project TimeGenerated, UserPrincipalName, Country, City, IPAddress, Result
+| order by UserPrincipalName asc

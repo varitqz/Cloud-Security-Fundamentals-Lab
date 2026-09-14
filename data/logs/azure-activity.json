@@ -1,0 +1,52 @@
+[
+  {
+    "TimeGenerated": "2026-09-09T16:49:20Z",
+    "Caller": "admin@example.com",
+    "OperationName": "Microsoft.Network/networkSecurityGroups/securityRules/write",
+    "ResourceGroup": "rg-security-lab",
+    "Resource": "nsg-web",
+    "Status": "Succeeded",
+    "Risk": "high",
+    "Details": "Created inbound TCP/22 allow from Internet"
+  },
+  {
+    "TimeGenerated": "2026-09-09T15:02:12Z",
+    "Caller": "max@contoso.com",
+    "OperationName": "Microsoft.Compute/virtualMachines/start/action",
+    "ResourceGroup": "rg-security-lab",
+    "Resource": "vm-web-01",
+    "Status": "Succeeded",
+    "Risk": "low",
+    "Details": "Started VM"
+  },
+  {
+    "TimeGenerated": "2026-09-09T13:38:54Z",
+    "Caller": "jannik@contoso.com",
+    "OperationName": "Microsoft.Network/virtualNetworks/write",
+    "ResourceGroup": "rg-security-lab",
+    "Resource": "security-lab-vnet",
+    "Status": "Succeeded",
+    "Risk": "low",
+    "Details": "Updated VNet tags"
+  },
+  {
+    "TimeGenerated": "2026-09-09T11:15:45Z",
+    "Caller": "service-backup@contoso.com",
+    "OperationName": "Microsoft.Storage/storageAccounts/listKeys/action",
+    "ResourceGroup": "rg-backup",
+    "Resource": "stbackup01",
+    "Status": "Succeeded",
+    "Risk": "medium",
+    "Details": "Listed storage account keys"
+  },
+  {
+    "TimeGenerated": "2026-09-09T09:26:03Z",
+    "Caller": "cloudadmin@contoso.com",
+    "OperationName": "Microsoft.Authorization/roleAssignments/write",
+    "ResourceGroup": "rg-security-lab",
+    "Resource": "rg-security-lab",
+    "Status": "Succeeded",
+    "Risk": "medium",
+    "Details": "Assigned Contributor to Max Keller"
+  }
+]

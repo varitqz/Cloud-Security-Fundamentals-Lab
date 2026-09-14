@@ -1,0 +1,44 @@
+[
+  {
+    "id": "vm-web-01",
+    "type": "Virtual Machine",
+    "group": "rg-security-lab",
+    "location": "West Europe",
+    "status": "Running"
+  },
+  {
+    "id": "nsg-web",
+    "type": "Network Security Group",
+    "group": "rg-security-lab",
+    "location": "West Europe",
+    "status": "Active"
+  },
+  {
+    "id": "security-lab-vnet",
+    "type": "Virtual Network",
+    "group": "rg-security-lab",
+    "location": "West Europe",
+    "status": "Active"
+  },
+  {
+    "id": "stpubliclab",
+    "type": "Storage Account",
+    "group": "rg-security-lab",
+    "location": "West Europe",
+    "status": "Active"
+  },
+  {
+    "id": "kv-security-lab",
+    "type": "Key Vault",
+    "group": "rg-security-lab",
+    "location": "West Europe",
+    "status": "Active"
+  },
+  {
+    "id": "law-security-lab",
+    "type": "Log Analytics Workspace",
+    "group": "rg-security-lab",
+    "location": "West Europe",
+    "status": "Active"
+  }
+]
